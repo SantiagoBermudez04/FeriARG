@@ -223,7 +223,8 @@
             </div>
             
             <div class="tabs">
-                <button class="tab-btn active" id="tab-mis-ferias" onclick="app.switchOrgTabs('ferias')">Mis ferias</button>
+                <button class="tab-btn active" id="tab-ferias-activas" onclick="app.switchOrgTabs('activas')">Ferias Activas</button>
+                <button class="tab-btn" id="tab-ferias-terminadas-org" onclick="app.switchOrgTabs('terminadas')">Ferias Terminadas</button>
                 <button class="tab-btn" id="tab-solicitudes" onclick="app.switchOrgTabs('solicitudes')">Solicitudes Recibidas</button>
                 <button class="tab-btn" id="tab-perfil-org" onclick="app.switchOrgTabs('perfil')">Mi Perfil</button>
             </div>
@@ -250,7 +251,7 @@
 
                     <label>Nombre de la Organización/Feria</label>
                     <input type="text" id="edit-org-nombre" required>
-                    <label>CUIT / RUT</label>
+                    <label>CUIT</label>
                     <input type="text" id="edit-org-cuit" required>
                     <label>Redes Sociales</label>
                     <input type="text" id="edit-org-redes">
@@ -312,7 +313,7 @@
                 <h2 class="text-center">Perfil de Organizador</h2>
                 <p class="text-center mb-2">Configurá los datos iniciales de tu organización</p>
                 <label>Nombre de la Organización</label><input type="text" id="org-nombre" required>
-                <label>CUIT / RUT</label><input type="text" id="org-cuit" required>
+                <label>CUIT</label><input type="text" id="org-cuit" required>
                 <label>Redes Sociales</label><input type="text" id="org-redes">
                 <button type="submit" class="btn-primario mt-2">Guardar y Empezar</button>
             </form>
@@ -369,6 +370,7 @@
             <div class="tabs">
                 <button class="tab-btn active" id="tab-ent-descubrir" onclick="app.switchEntTabs('descubrir')">Descubrir Ferias</button>
                 <button class="tab-btn" id="tab-mis-postulaciones" onclick="app.switchEntTabs('postulaciones')">Mis Postulaciones</button>
+                <button class="tab-btn" id="tab-mis-terminadas" onclick="app.switchEntTabs('terminadas')">Ferias Terminadas</button>
                 <button class="tab-btn" id="tab-perfil-ent" onclick="app.switchEntTabs('perfil')">Mi Perfil</button>
             </div>
 
@@ -378,6 +380,8 @@
             </div>
 
             <div id="grid-ferias-postuladas" class="grid-cards oculto"></div>
+
+            <div id="grid-ferias-terminadas-ent" class="grid-cards oculto"></div>
 
             <div id="ent-perfil-container" class="oculto" style="margin-top: 20px;">
                 <form onsubmit="app.guardarPerfilEnt(event)">
@@ -502,7 +506,9 @@
                 
                 // Otras postulaciones para la gestión del Org
                 { id: 1004, idFeria: 101, idEnt: 3, estado: 'a pagar', fechaSolicitud: '2026-06-01', adjuntos: null },
-                { id: 1005, idFeria: 101, idEnt: 4, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-05-20', adjuntos: null }
+                { id: 1005, idFeria: 101, idEnt: 4, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-05-20', adjuntos: null },
+                // Asistencia registrada en feria finalizada
+                { id: 1010, idFeria: 105, idEnt: 2, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-02-01', adjuntos: null }
             ]
         };
 
@@ -563,11 +569,23 @@
                 const email = document.getElementById('login-email').value;
                 const pass = document.getElementById('login-pass').value;
                 const user = state.usuarios.find(u => u.email === email && u.password === pass);
+                
                 if (user) {
-                    state.currentUser = user; app.actualizarHeader();
+                    state.currentUser = user; 
                     app.mostrarAlerta(`¡Bienvenido/a ${user.name}!`);
-                    app.mostrarVista('view-role-selection');
-                } else { alert('Credenciales incorrectas'); }
+                    
+                    // Verificamos si el usuario ya tiene un rol configurado
+                    if (user.isOrgSetup) {
+                        app.seleccionarRol('organizador');
+                    } else if (user.isEntSetup) {
+                        app.seleccionarRol('feriante');
+                    } else {
+                        // Fallback: Si la cuenta fue creada pero nunca seleccionó un rol
+                        app.mostrarVista('view-role-selection');
+                    }
+                } else { 
+                    alert('Credenciales incorrectas'); 
+                }
             },
 
             registro: (e) => {
@@ -681,39 +699,103 @@
             },
 
             switchOrgTabs: (tab) => {
-                document.getElementById('tab-mis-ferias').classList.toggle('active', tab === 'ferias');
+                document.getElementById('tab-ferias-activas').classList.toggle('active', tab === 'activas');
+                document.getElementById('tab-ferias-terminadas-org').classList.toggle('active', tab === 'terminadas');
                 document.getElementById('tab-solicitudes').classList.toggle('active', tab === 'solicitudes');
                 document.getElementById('tab-perfil-org').classList.toggle('active', tab === 'perfil');
-                document.getElementById('org-lista-ferias').classList.toggle('oculto', tab !== 'ferias');
+                
+                document.getElementById('org-lista-ferias').classList.toggle('oculto', tab !== 'activas' && tab !== 'terminadas');
+                document.getElementById('filtro-org-container').classList.toggle('oculto', tab !== 'activas' && tab !== 'terminadas');
                 document.getElementById('org-lista-solicitudes').classList.toggle('oculto', tab !== 'solicitudes');
                 document.getElementById('org-perfil-container').classList.toggle('oculto', tab !== 'perfil');
-                document.getElementById('filtro-org-container').classList.toggle('oculto', tab !== 'ferias');
+                
                 if (tab === 'perfil') app.cargarPerfilOrg();
+                // Ahora refrescamos la vista también al entrar a solicitudes
+                if (tab === 'activas' || tab === 'terminadas' || tab === 'solicitudes') app.renderOrgDashboard();
             },
 
             switchEntTabs: (tab) => {
                 document.getElementById('tab-ent-descubrir').classList.toggle('active', tab === 'descubrir');
                 document.getElementById('tab-mis-postulaciones').classList.toggle('active', tab === 'postulaciones');
+                document.getElementById('tab-mis-terminadas').classList.toggle('active', tab === 'terminadas');
                 document.getElementById('tab-perfil-ent').classList.toggle('active', tab === 'perfil');
+                
                 document.getElementById('ent-descubrir-container').classList.toggle('oculto', tab !== 'descubrir');
                 document.getElementById('grid-ferias-postuladas').classList.toggle('oculto', tab !== 'postulaciones');
+                document.getElementById('grid-ferias-terminadas-ent').classList.toggle('oculto', tab !== 'terminadas');
                 document.getElementById('ent-perfil-container').classList.toggle('oculto', tab !== 'perfil');
-                if (tab === 'descubrir') { app.renderEntExplorer(); } else if (tab === 'postulaciones') { app.renderMisPostulaciones(); } else if (tab === 'perfil') { app.cargarPerfilEnt(); }
+                
+                if (tab === 'descubrir') { app.renderEntExplorer(); } 
+                else if (tab === 'postulaciones') { app.renderMisPostulaciones(); } 
+                else if (tab === 'terminadas') { app.renderEntTerminadas(); }
+                else if (tab === 'perfil') { app.cargarPerfilEnt(); }
+            },
+
+            renderEntTerminadas: () => {
+                const grid = document.getElementById('grid-ferias-terminadas-ent');
+                const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
+                
+                // Filtramos solo las reservas exitosas en ferias que ya se realizaron
+                const reservasCompletadas = misReservas.filter(r => {
+                    const feria = state.ferias.find(f => f.id === r.idFeria);
+                    const fueRealizada = feria && feria.estado.toLowerCase() === 'realizada';
+                    const asisti = ['¡nos vemos en la feria!', 'pago total realizado'].includes(r.estado.toLowerCase());
+                    return fueRealizada && asisti;
+                });
+
+                if(reservasCompletadas.length === 0){
+                    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">Aún no tienes asistencias a ferias finalizadas.</p>`;
+                    return;
+                }
+
+                let htmlFinal = '';
+                reservasCompletadas.forEach(r => {
+                    const f = state.ferias.find(x => x.id === r.idFeria);
+                    const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
+                    
+                    htmlFinal += `
+                        <div class="card" style="opacity: 0.9;">
+                            <img src="${imgSrc}" class="card-img" alt="Feria" style="filter: grayscale(40%);">
+                            <div class="card-body">
+                                <span class="badge" style="background-color: #555; color: white; align-self: flex-start; margin-bottom: 10px;">FINALIZADA</span>
+                                <div class="card-title">${f.nombre}</div>
+                                <div class="card-info mt-2"><i class="fa-regular fa-calendar-check"></i> Asististe el ${f.fecha}</div>
+                                <div class="card-info"><i class="fa-solid fa-location-dot"></i> ${f.ubicacion}</div>
+                                <div class="card-info mt-2" style="font-weight:bold; color: var(--carbon);">💰 Costo del Stand: $${f.costo}</div>
+                            </div>
+                            <div class="card-footer" style="padding: 15px; border-top: 1px solid var(--borde); justify-content: center; align-items: stretch;">
+                                <button class="btn-secundario" style="width: 100%;" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = htmlFinal;
             },
 
             // --- FLUJO ORGANIZADOR ---
-            initOrgFlow: () => { app.renderOrgDashboard(); app.mostrarVista('view-org-dashboard'); app.switchOrgTabs('ferias'); },
+            initOrgFlow: () => { app.renderOrgDashboard(); app.mostrarVista('view-org-dashboard'); app.switchOrgTabs('activas'); },
 
             renderOrgDashboard: () => {
-                let misFerias = state.ferias.filter(f => f.idOrg === state.currentUser.id);
+                // Esta variable guarda todas las ferias para no perder solicitudes
+                const todasMisFerias = state.ferias.filter(f => f.idOrg === state.currentUser.id);
+                // Esta variable se usa para filtrar lo que se ve en pantalla
+                let misFeriasVisuales = [...todasMisFerias];
+                
                 const filtroFeria = document.getElementById('filtro-org-ferias').value.toLowerCase();
                 
                 if(filtroFeria) {
-                    misFerias = misFerias.filter(f => f.nombre.toLowerCase().includes(filtroFeria) || f.ubicacion.toLowerCase().includes(filtroFeria) || (f.estado && f.estado.toLowerCase().includes(filtroFeria)));
+                    misFeriasVisuales = misFeriasVisuales.filter(f => f.nombre.toLowerCase().includes(filtroFeria) || f.ubicacion.toLowerCase().includes(filtroFeria) || (f.estado && f.estado.toLowerCase().includes(filtroFeria)));
                 }
 
-                const activas = misFerias.filter(f => !['realizada', 'cancelada'].includes((f.estado || '').toLowerCase()));
-                const historial = misFerias.filter(f => ['realizada', 'cancelada'].includes((f.estado || '').toLowerCase()));
+                // Detectamos qué pestaña está activa
+                const viendoTerminadas = document.getElementById('tab-ferias-terminadas-org').classList.contains('active');
+
+                // Filtramos la grilla SIN alterar la data de las solicitudes
+                if (viendoTerminadas) {
+                    misFeriasVisuales = misFeriasVisuales.filter(f => ['realizada', 'cancelada'].includes((f.estado || '').toLowerCase()));
+                } else {
+                    misFeriasVisuales = misFeriasVisuales.filter(f => !['realizada', 'cancelada'].includes((f.estado || '').toLowerCase()));
+                }
 
                 const tablaFerias = document.getElementById('org-lista-ferias');
                 tablaFerias.innerHTML = '';
@@ -740,23 +822,17 @@
                     `;
                 };
 
-                if(misFerias.length === 0){
-                    tablaFerias.innerHTML = `<p class="text-center mt-2" style="grid-column: 1/-1;">No se encontraron ferias.</p>`;
+                if(misFeriasVisuales.length === 0){
+                    tablaFerias.innerHTML = `<p class="text-center mt-2" style="grid-column: 1/-1;">No se encontraron ferias en esta sección.</p>`;
                 } else {
                     let htmlFinal = '';
-                    if(activas.length > 0) {
-                        htmlFinal += `<h3 style="grid-column: 1/-1; border-bottom: 2px solid var(--verde-menta); padding-bottom: 5px;">Ferias Activas</h3>`;
-                        activas.forEach(f => htmlFinal += generarCardFeria(f, false));
-                    }
-                    if(historial.length > 0) {
-                        htmlFinal += `<h3 style="grid-column: 1/-1; border-bottom: 2px solid var(--verde-menta); padding-bottom: 5px; margin-top: 20px;">Realizadas o Canceladas</h3>`;
-                        historial.forEach(f => htmlFinal += generarCardFeria(f, true));
-                    }
+                    misFeriasVisuales.forEach(f => htmlFinal += generarCardFeria(f, viendoTerminadas));
                     tablaFerias.innerHTML = htmlFinal;
                 }
 
                 // TABLA DE SOLICITUDES
-                const misFeriasIds = misFerias.map(f => f.id);
+                // Aquí cruzamos la data de reservas contra "todasMisFerias" en lugar de las filtradas visualmente
+                const misFeriasIds = todasMisFerias.map(f => f.id);
                 const misSolicitudes = state.reservas.filter(r => misFeriasIds.includes(r.idFeria));
                 const filtro = document.getElementById('filtro-solicitudes').value.toLowerCase();
                 const containerSol = document.getElementById('tabla-solicitudes-container');
