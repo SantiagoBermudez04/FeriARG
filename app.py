@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 # Importamos las herramientas de LangChain para Gemini (Google)
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import HumanMessage
 
 # Cargar las API Keys desde el archivo .env
 load_dotenv()
@@ -34,13 +34,25 @@ try:
 
     elif PROVEEDOR_IA == "gemini":
         api_key_gemini = os.getenv("GOOGLE_API_KEY")
-       # 2. Inicializamos Gemini aquí adentro
+       # 2. Inicializamos Gemini 
         llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash", 
             temperature=0.7, 
-            google_api_key=api_key_gemini,
-            convert_system_message_to_human=True  # <--- ¡AGREGA ESTA LÍNEA!
+            google_api_key=api_key_gemini
+            # Ya puedes borrar el convert_system_message_to_human si quieres, no lo usaremos
         )
+        
+        # 3. PLAN B INFALIBLE: Unimos tus instrucciones con la pregunta del usuario en un solo texto
+        prompt_completo = f"{INSTRUCCIONES_BASE}\n\nPregunta del usuario: {mensaje_usuario}"
+
+        mensajes = [
+            HumanMessage(content=prompt_completo)
+        ]
+
+        # 4. Invocamos a la IA
+        respuesta = llm.invoke(mensajes)
+        
+        return jsonify({'respuesta': respuesta.content})
         print("🤖 Backend iniciado usando: Google Gemini (2.5 Flash)")
         
 except Exception as e:
