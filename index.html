@@ -1269,7 +1269,7 @@
                     body.innerHTML += `<div id="${idCarga}" class="chat-msg chat-bot" style="color: gray;">Pensando...</div>`; body.scrollTop = body.scrollHeight;
                     
                     // --- CAMBIO 1: URL apuntando a Vercel ---
-                    const peticion = await fetch('https://feriargweb.vercel.app/api/chat', { 
+                    const peticion = await fetch('https://feriarg.onrender.com/api/chat', { 
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' }, 
                         body: JSON.stringify({ mensaje: pregunta }) 
