@@ -88,27 +88,37 @@ def chat():
     try:
         data = request.json
         mensaje_usuario = data.get('mensaje')
-        
         print(f"\nUsuario dice: {mensaje_usuario}")
+
+        # 1. Obtenemos la llave JUSTO cuando se hace la petición
+        api_key_gemini = os.getenv("GOOGLE_API_KEY")
         
-        # 3. Armamos la estructura de mensajes (LangChain se encarga de que funcione igual para Gemini y OpenAI)
+        if not api_key_gemini:
+            print("❌ Vercel no está leyendo la GOOGLE_API_KEY")
+            return jsonify({'error': 'Fallo de configuración: No se encontró la API Key en el servidor.'}), 500
+
+        # 2. Inicializamos Gemini aquí adentro
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash", 
+            temperature=0.7, 
+            google_api_key=api_key_gemini
+        )
+        
+        # 3. Armamos los mensajes
         mensajes = [
             SystemMessage(content=INSTRUCCIONES_BASE),
             HumanMessage(content=mensaje_usuario)
         ]
 
-        # 4. Invocamos a la IA (la variable 'llm' ya sabe si llamar a Google o a OpenAI)
+        # 4. Invocamos a la IA
         respuesta = llm.invoke(mensajes)
-        respuesta_ia = respuesta.content
         
-        print(f"IA ({PROVEEDOR_IA}) responde: {respuesta_ia}")
-
-        return jsonify({'respuesta': respuesta_ia})
+        return jsonify({'respuesta': respuesta.content})
 
     except Exception as e:
-        # Aquí capturamos el error exacto y lo imprimimos en la consola
-        print(f"❌ Error procesando la IA: {e}")
-        return jsonify({'error': f'Lo siento, hubo un problema técnico. Revisa la consola del servidor.'}), 500
+        # Ahora sí, si falla, el frontend te dirá exactamente el motivo técnico
+        print(f"❌ Error procesando la IA: {str(e)}")
+        return jsonify({'error': f'Error técnico: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
