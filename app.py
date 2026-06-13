@@ -3,63 +3,18 @@ from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 
-# Importamos las herramientas de LangChain para OpenAI
-from langchain_openai import ChatOpenAI
 # Importamos las herramientas de LangChain para Gemini (Google)
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 
-# Cargar las API Keys desde el archivo .env
+# Cargar las API Keys desde el archivo .env (para local)
 load_dotenv()
 
 app = Flask(__name__)
+# CORS permite que tu frontend en Vercel hable con tu backend en Render
 CORS(app)
 
-# ==========================================
-# CONFIGURACIÓN DEL PROVEEDOR DE IA
-# Cambia a "gemini" o "openai" para alternar
-# ==========================================
-PROVEEDOR_IA = "gemini" 
-
-try:
-    if PROVEEDOR_IA == "openai":
-        api_key_openai = os.getenv("OPENAI_API_KEY")
-        # Inicializamos GPT-3.5-turbo
-        llm = ChatOpenAI(
-            model="gpt-3.5-turbo", 
-            temperature=0.7, 
-            api_key=api_key_openai
-        )
-        print("🤖 Backend iniciado usando: OpenAI")
-
-    elif PROVEEDOR_IA == "gemini":
-        api_key_gemini = os.getenv("GOOGLE_API_KEY")
-       # 2. Inicializamos Gemini 
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash", 
-            temperature=0.7, 
-            google_api_key=api_key_gemini
-            # Ya puedes borrar el convert_system_message_to_human si quieres, no lo usaremos
-        )
-        
-        # 3. PLAN B INFALIBLE: Unimos tus instrucciones con la pregunta del usuario en un solo texto
-        prompt_completo = f"{INSTRUCCIONES_BASE}\n\nPregunta del usuario: {mensaje_usuario}"
-
-        mensajes = [
-            HumanMessage(content=prompt_completo)
-        ]
-
-        # 4. Invocamos a la IA
-        respuesta = llm.invoke(mensajes)
-        
-        return jsonify({'respuesta': respuesta.content})
-        print("🤖 Backend iniciado usando: Google Gemini (2.5 Flash)")
-        
-except Exception as e:
-    print(f"❌ Error al inicializar el modelo de IA: {e}")
-
-
-# 2. El "System Prompt" (Tus reglas se mantienen intactas)
+# 1. El "System Prompt" (Tus reglas intactas)
 INSTRUCCIONES_BASE = """
 Eres el asistente virtual oficial de FeriARG, una plataforma web innovadora que conecta a organizadores de ferias con emprendedores (feriantes) en La Plata.
 Tu objetivo es ayudar a los usuarios a entender la plataforma y guiarlos paso a paso en su uso. Tu tono debe ser amable, profesional, conciso y resolutivo.
@@ -103,35 +58,37 @@ def chat():
         mensaje_usuario = data.get('mensaje')
         print(f"\nUsuario dice: {mensaje_usuario}")
 
-        # 1. Obtenemos la llave JUSTO cuando se hace la petición
+        # 2. Obtenemos la llave de Google en el momento exacto de la petición
         api_key_gemini = os.getenv("GOOGLE_API_KEY")
         
         if not api_key_gemini:
-            print("❌ Vercel no está leyendo la GOOGLE_API_KEY")
+            print("❌ Render no está leyendo la GOOGLE_API_KEY")
             return jsonify({'error': 'Fallo de configuración: No se encontró la API Key en el servidor.'}), 500
 
-        # 2. Inicializamos Gemini aquí adentro
+        # 3. Inicializamos Gemini 
         llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash", 
             temperature=0.7, 
             google_api_key=api_key_gemini
         )
         
-        # 3. Armamos los mensajes
+        # 4. PLAN B INFALIBLE: Unimos tus instrucciones y la pregunta en un solo texto
+        prompt_completo = f"{INSTRUCCIONES_BASE}\n\nPregunta del usuario: {mensaje_usuario}"
+
         mensajes = [
-            SystemMessage(content=INSTRUCCIONES_BASE),
-            HumanMessage(content=mensaje_usuario)
+            HumanMessage(content=prompt_completo)
         ]
 
-        # 4. Invocamos a la IA
+        # 5. Invocamos a la IA
         respuesta = llm.invoke(mensajes)
         
         return jsonify({'respuesta': respuesta.content})
 
     except Exception as e:
-        # Ahora sí, si falla, el frontend te dirá exactamente el motivo técnico
+        # Si algo falla, lo imprimimos en los logs de Render y se lo mandamos al frontend
         print(f"❌ Error procesando la IA: {str(e)}")
         return jsonify({'error': f'Error técnico: {str(e)}'}), 500
 
+# Arrancamos el servidor
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
