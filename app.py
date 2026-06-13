@@ -34,11 +34,12 @@ try:
 
     elif PROVEEDOR_IA == "gemini":
         api_key_gemini = os.getenv("GOOGLE_API_KEY")
-        # Usamos el modelo exacto que descubrimos en tu lista
+       # 2. Inicializamos Gemini aquí adentro
         llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash", 
             temperature=0.7, 
-            google_api_key=api_key_gemini
+            google_api_key=api_key_gemini,
+            convert_system_message_to_human=True  # <--- ¡AGREGA ESTA LÍNEA!
         )
         print("🤖 Backend iniciado usando: Google Gemini (2.5 Flash)")
         
