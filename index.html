@@ -269,7 +269,6 @@
             <div style="background: var(--blanco); padding: 20px; border-radius: var(--radio); margin-bottom: 20px; box-shadow: var(--sombra); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
                 <div>
                     <h3>Estado Actual: <span id="gestion-estado-badge" class="badge"></span></h3>
-                    <p style="font-size: 0.85rem; color: gray; margin-top: 5px;" id="msg-admin-estado">* El estado (En Revisión / Aceptada) es modificado exclusivamente por los administradores de FeriARG.</p>
                 </div>
             </div>
             
@@ -446,6 +445,29 @@
             <div style="background: var(--blanco); border-radius: var(--radio); max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px;">
                 <button onclick="app.cerrarAdjuntos()" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--carbon);"><i class="fa-solid fa-xmark"></i></button>
                 <div id="adjuntos-content"></div>
+            </div>
+        </div>
+
+        <div id="modal-reporte" class="oculto" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 350; display: flex; justify-content: center; align-items: center; padding: 20px;">
+            <div style="background: var(--blanco); border-radius: var(--radio); max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px;">
+                <button onclick="app.cerrarModalReporte()" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--carbon); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+                <h3 style="color: var(--rojo-tomate); margin-bottom: 5px;"><i class="fa-solid fa-flag"></i> Reportar Feria</h3>
+                <p style="font-size: 0.9rem; color: gray; margin-bottom: 20px;">Ayudanos a mantener una comunidad segura.</p>
+                <form onsubmit="app.enviarReporte(event)" style="box-shadow: none; padding: 0;">
+                    <input type="hidden" id="reporte-feria-id">
+                    <label>Motivo del reporte</label>
+                    <select id="reporte-motivo" required>
+                        <option value="">Seleccioná un motivo...</option>
+                        <option value="Información falsa">Información falsa o engañosa</option>
+                        <option value="Estafa">Posible fraude o estafa</option>
+                        <option value="Contenido inapropiado">Contenido inapropiado</option>
+                        <option value="Feria inexistente">La feria no existe</option>
+                        <option value="Otro">Otro motivo</option>
+                    </select>
+                    <label>Detalles adicionales (Opcional)</label>
+                    <textarea id="reporte-detalle" rows="3" placeholder="Contanos más sobre el problema..."></textarea>
+                    <button type="submit" class="btn-primario mt-2" style="width: 100%; background-color: var(--rojo-tomate);">Enviar Reporte</button>
+                </form>
             </div>
         </div>
 
@@ -710,7 +732,6 @@
                 document.getElementById('org-perfil-container').classList.toggle('oculto', tab !== 'perfil');
                 
                 if (tab === 'perfil') app.cargarPerfilOrg();
-                // Ahora refrescamos la vista también al entrar a solicitudes
                 if (tab === 'activas' || tab === 'terminadas' || tab === 'solicitudes') app.renderOrgDashboard();
             },
 
@@ -735,7 +756,6 @@
                 const grid = document.getElementById('grid-ferias-terminadas-ent');
                 const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
                 
-                // Filtramos solo las reservas exitosas en ferias que ya se realizaron
                 const reservasCompletadas = misReservas.filter(r => {
                     const feria = state.ferias.find(f => f.id === r.idFeria);
                     const fueRealizada = feria && feria.estado.toLowerCase() === 'realizada';
@@ -776,9 +796,7 @@
             initOrgFlow: () => { app.renderOrgDashboard(); app.mostrarVista('view-org-dashboard'); app.switchOrgTabs('activas'); },
 
             renderOrgDashboard: () => {
-                // Esta variable guarda todas las ferias para no perder solicitudes
                 const todasMisFerias = state.ferias.filter(f => f.idOrg === state.currentUser.id);
-                // Esta variable se usa para filtrar lo que se ve en pantalla
                 let misFeriasVisuales = [...todasMisFerias];
                 
                 const filtroFeria = document.getElementById('filtro-org-ferias').value.toLowerCase();
@@ -787,10 +805,8 @@
                     misFeriasVisuales = misFeriasVisuales.filter(f => f.nombre.toLowerCase().includes(filtroFeria) || f.ubicacion.toLowerCase().includes(filtroFeria) || (f.estado && f.estado.toLowerCase().includes(filtroFeria)));
                 }
 
-                // Detectamos qué pestaña está activa
                 const viendoTerminadas = document.getElementById('tab-ferias-terminadas-org').classList.contains('active');
 
-                // Filtramos la grilla SIN alterar la data de las solicitudes
                 if (viendoTerminadas) {
                     misFeriasVisuales = misFeriasVisuales.filter(f => ['realizada', 'cancelada'].includes((f.estado || '').toLowerCase()));
                 } else {
@@ -801,15 +817,17 @@
                 tablaFerias.innerHTML = '';
 
                 const generarCardFeria = (f, esHistorial) => {
-                    const estadoReal = f.estado || 'en revisión';
+                    const estadoReal = f.estado || 'Aceptada';
                     const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
                     const btnLabel = esHistorial ? "Ver Detalles" : "Gestionar";
+                    
+                    const badgeHtml = estadoReal.toLowerCase() === 'aceptada' ? '' : `<span class="badge ${estadoReal.toLowerCase().replace(/ /g, '-')}" style="align-self: flex-start;">${estadoReal.toUpperCase()}</span>`;
                     
                     return `
                         <div class="card">
                             <img src="${imgSrc}" class="card-img" alt="Feria">
                             <div class="card-body">
-                                <span class="badge ${estadoReal.toLowerCase().replace(/ /g, '-')}" style="align-self: flex-start;">${estadoReal.toUpperCase()}</span>
+                                ${badgeHtml}
                                 <div class="card-title">${f.nombre}</div>
                                 <div class="card-info"><i class="fa-regular fa-calendar"></i> ${f.fecha}</div>
                                 <div class="card-info"><i class="fa-solid fa-location-dot"></i> ${f.ubicacion}</div>
@@ -830,8 +848,6 @@
                     tablaFerias.innerHTML = htmlFinal;
                 }
 
-                // TABLA DE SOLICITUDES
-                // Aquí cruzamos la data de reservas contra "todasMisFerias" en lugar de las filtradas visualmente
                 const misFeriasIds = todasMisFerias.map(f => f.id);
                 const misSolicitudes = state.reservas.filter(r => misFeriasIds.includes(r.idFeria));
                 const filtro = document.getElementById('filtro-solicitudes').value.toLowerCase();
@@ -887,10 +903,16 @@
                 if(ocupados > 0) { document.getElementById('ed-cupos-help').textContent = `* Tienes ${ocupados} stands reservados. No puedes bajar el cupo a menos de este número.`; } 
                 else { document.getElementById('ed-cupos-help').textContent = ""; }
                 
-                const estado = f.estado || 'en revisión';
+                const estado = f.estado || 'Aceptada';
                 const badge = document.getElementById('gestion-estado-badge');
-                badge.textContent = estado.toUpperCase();
-                badge.className = `badge ${estado.toLowerCase().replace(/ /g, '-')}`;
+                
+                if (estado.toLowerCase() === 'aceptada') {
+                    badge.textContent = 'ACTIVA';
+                    badge.className = 'badge aceptada'; 
+                } else {
+                    badge.textContent = estado.toUpperCase();
+                    badge.className = `badge ${estado.toLowerCase().replace(/ /g, '-')}`;
+                }
 
                 const formEdicion = document.getElementById('form-editar-feria');
                 const esInactiva = ['realizada', 'cancelada'].includes(estado.toLowerCase());
@@ -911,7 +933,6 @@
                     document.getElementById('upload-edit-feria').classList.remove('oculto');
                 }
 
-                // Feriantes Aceptados
                 const containerFeriantes = document.getElementById('gestion-feriantes-aceptados');
                 const aceptados = state.reservas.filter(r => r.idFeria === f.id && ['a pagar', 'reservada', 'pago total realizado', '¡nos vemos en la feria!', 'cancelada por falta de pago'].includes(r.estado.toLowerCase()));
                 
@@ -963,15 +984,19 @@
                 const cupos = parseInt(document.getElementById('nf-cupos').value);
                 let imagenSrc = document.getElementById('img-preview-nueva-feria').src;
                 if(imagenSrc.includes('placeholder')) { imagenSrc = ''; }
+                
                 const nuevaFeria = {
                     id: Date.now(), idOrg: state.currentUser.id, nombre: document.getElementById('nf-nombre').value,
                     fecha: document.getElementById('nf-fecha').value, horario: document.getElementById('nf-horario').value,
                     ubicacion: document.getElementById('nf-ubicacion').value, costo: parseInt(document.getElementById('nf-costo').value),
                     cuposTotales: cupos, cuposDisponibles: cupos, rubros: document.getElementById('nf-rubros').value,
                     requisitos: document.getElementById('nf-requisitos').value, desc: document.getElementById('nf-desc').value,
-                    estado: 'En revisión', imagen: imagenSrc
+                    estado: 'Aceptada',
+                    imagen: imagenSrc
                 };
-                state.ferias.push(nuevaFeria); app.mostrarAlerta('Feria enviada a revisión con éxito');
+                
+                state.ferias.push(nuevaFeria); 
+                app.mostrarAlerta('Feria publicada con éxito');
                 document.getElementById('view-feria-form').querySelector('form').reset();
                 document.getElementById('img-preview-nueva-feria').src = "https://via.placeholder.com/400x200/A7D7C5/1E5631?text=Subir+Foto";
                 app.initOrgFlow();
@@ -989,7 +1014,6 @@
                 }
             },
 
-            // --- VISTA ADJUNTOS ORGANIZADOR ---
             abrirAdjuntos: (idReserva) => {
                 const res = state.reservas.find(r => r.id === idReserva);
                 if(!res || !res.adjuntos) return;
@@ -1033,9 +1057,12 @@
                         <div class="card">
                             <img src="${imgSrc}" class="card-img" alt="Feria">
                             <div class="card-body">
-                                <div style="display:flex; justify-content: space-between;">
-                                    <span style="font-size: 0.8rem; color: gray;"><i class="fa-solid fa-building"></i> ${org.orgData ? org.orgData.name : 'Organizador'}</span>
-                                    ${badgeCupo}
+                                <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+                                    <span style="font-size: 0.8rem; color: gray; flex-grow: 1;"><i class="fa-solid fa-building"></i> ${org.orgData ? org.orgData.name : 'Organizador'}</span>
+                                    <div style="display:flex; gap: 5px; align-items: center;">
+                                        ${badgeCupo}
+                                        <button class="btn-outline btn-chico" style="border: none; color: var(--rojo-tomate); padding: 0 5px; cursor: pointer;" onclick="app.abrirModalReporte(${f.id})" title="Reportar feria"><i class="fa-solid fa-flag"></i></button>
+                                    </div>
                                 </div>
                                 <div class="card-title">${f.nombre}</div>
                                 <div class="card-info"><i class="fa-regular fa-calendar"></i> ${f.fecha} | ${f.horario}</div>
@@ -1133,7 +1160,6 @@
                 }
             },
 
-            // --- 3. RESTRICCIÓN DE PAGO SEGÚN FECHA ---
             renderMisPostulaciones: () => {
                 const grid = document.getElementById('grid-ferias-postuladas');
                 const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
@@ -1155,7 +1181,6 @@
                     let desdeFormat = '';
                     let hastaFormat = '';
 
-                    // Formatear las fechas YYYY-MM-DD para mostrarlas al usuario como DD/MM/YYYY
                     if (r.pagoDesde && r.pagoHasta) {
                         desdeFormat = r.pagoDesde.split('-').reverse().join('/');
                         hastaFormat = r.pagoHasta.split('-').reverse().join('/');
@@ -1172,26 +1197,20 @@
 
                     let actionButtons = `<button class="btn-secundario" style="width: 100%; margin-bottom: 10px;" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles de Feria</button>`;
 
-                    // Lógica para botones de Pago
                     if (r.estado.toLowerCase() === 'a pagar') {
                         actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, 'reservada')">Pagar Reserva</button>`;
                     } else if (r.estado.toLowerCase() === 'reservada') {
                         const hoy = new Date().toISOString().split('T')[0];
                         
-                        // Si existen límites de fecha para el pago, comprobarlos
                         if (r.pagoDesde && r.pagoHasta) {
                             if (hoy < r.pagoDesde) {
-                                // Aún no es fecha de pago
                                 actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: grey;" title="Habilitado desde el ${desdeFormat}">Pago habilitado el ${desdeFormat}</button>`;
                             } else if (hoy > r.pagoHasta) {
-                                // Plazo de pago expirado
                                 actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: var(--rojo-tomate);" title="Plazo vencido">Plazo de pago vencido</button>`;
                             } else {
-                                // Hoy está dentro de las fechas
                                 actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand</button>`;
                             }
                         } else {
-                            // Si no hay límites de fechas en la BD, dejar pagar libremente
                             actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand</button>`;
                         }
                     }
@@ -1249,6 +1268,22 @@
                 }
             },
 
+            // --- SISTEMA DE REPORTES ---
+            abrirModalReporte: (idFeria) => {
+                document.getElementById('reporte-feria-id').value = idFeria;
+                document.getElementById('reporte-motivo').value = '';
+                document.getElementById('reporte-detalle').value = '';
+                document.getElementById('modal-reporte').classList.remove('oculto');
+            },
+            cerrarModalReporte: () => { 
+                document.getElementById('modal-reporte').classList.add('oculto'); 
+            },
+            enviarReporte: (e) => {
+                e.preventDefault();
+                app.cerrarModalReporte();
+                app.mostrarAlerta('Reporte enviado exitosamente. Revisaremos la feria a la brevedad.');
+            },
+
             // --- CHATBOT ---
             toggleChatbot: () => {
                 const panel = document.getElementById('chatbot-panel'); panel.classList.toggle('oculto');
@@ -1268,7 +1303,6 @@
                     const idCarga = 'carga-' + Date.now();
                     body.innerHTML += `<div id="${idCarga}" class="chat-msg chat-bot" style="color: gray;">Pensando...</div>`; body.scrollTop = body.scrollHeight;
                     
-                    // --- CAMBIO 1: URL apuntando a Vercel ---
                     const peticion = await fetch('https://feriarg.onrender.com/api/chat', { 
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' }, 
@@ -1283,7 +1317,6 @@
                     body.scrollTop = body.scrollHeight;
                 } catch (error) {
                     console.error("Error:", error); 
-                    // --- CAMBIO 2: Mensaje de error genérico ---
                     body.innerHTML += `<div class="chat-msg chat-bot" style="color: red;">Error al conectar con la IA. Por favor, intenta de nuevo más tarde.</div>`;
                 }
             },
