@@ -225,7 +225,6 @@
             <div class="tabs">
                 <button class="tab-btn active" id="tab-ferias-activas" onclick="app.switchOrgTabs('activas')">Ferias Activas</button>
                 <button class="tab-btn" id="tab-ferias-terminadas-org" onclick="app.switchOrgTabs('terminadas')">Ferias Terminadas</button>
-                <button class="tab-btn" id="tab-solicitudes" onclick="app.switchOrgTabs('solicitudes')">Solicitudes Recibidas</button>
                 <button class="tab-btn" id="tab-perfil-org" onclick="app.switchOrgTabs('perfil')">Mi Perfil</button>
             </div>
 
@@ -234,11 +233,6 @@
             </div>
 
             <div id="org-lista-ferias" class="grid-cards"></div>
-
-            <div id="org-lista-solicitudes" class="table-responsive oculto">
-                <input type="text" class="filtros mb-2" id="filtro-solicitudes" placeholder="Filtrar por feria o emprendedor..." onkeyup="app.renderOrgDashboard()" style="max-width: 400px; margin-left: 15px; margin-top: 15px;">
-                <div id="tabla-solicitudes-container"></div>
-            </div>
 
             <div id="org-perfil-container" class="oculto" style="margin-top: 20px;">
                 <form onsubmit="app.guardarPerfilOrg(event)">
@@ -271,39 +265,49 @@
                     <h3>Estado Actual: <span id="gestion-estado-badge" class="badge"></span></h3>
                 </div>
             </div>
+
+            <div class="tabs" style="margin-bottom: 20px;">
+                <button class="tab-btn active" id="gestion-tab-detalles" onclick="app.switchGestionTabs('detalles')">Detalles de la Feria</button>
+                <button class="tab-btn" id="gestion-tab-aceptados" onclick="app.switchGestionTabs('aceptados')">Feriantes Aceptados</button>
+                <button class="tab-btn" id="gestion-tab-solicitudes" onclick="app.switchGestionTabs('solicitudes')">Solicitudes Recibidas</button>
+            </div>
             
-            <div style="display: grid; grid-template-columns: 1fr; gap: 30px;">
-                <div style="background: var(--blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra);">
-                    <h3 style="margin-bottom: 20px; border-bottom: 2px solid var(--verde-menta); padding-bottom: 10px;">Detalles de la Feria</h3>
-                    <p id="msg-edicion-bloqueada" class="oculto" style="color: var(--rojo-tomate); font-weight: bold; margin-bottom: 15px;"><i class="fa-solid fa-lock"></i> La edición está bloqueada porque la feria ya fue realizada o cancelada.</p>
+            <div id="gestion-content-detalles" style="background: var(--blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra);">
+                <h3 style="margin-bottom: 20px; border-bottom: 2px solid var(--verde-menta); padding-bottom: 10px;">Detalles de la Feria</h3>
+                <p id="msg-edicion-bloqueada" class="oculto" style="color: var(--rojo-tomate); font-weight: bold; margin-bottom: 15px;"><i class="fa-solid fa-lock"></i> La edición está bloqueada porque la feria ya fue realizada o cancelada.</p>
+                
+                <form id="form-editar-feria" onsubmit="app.guardarEdicionFeria(event)" style="max-width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; box-shadow: none; padding: 0;">
+                    <input type="hidden" id="ed-id">
                     
-                    <form id="form-editar-feria" onsubmit="app.guardarEdicionFeria(event)" style="max-width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; box-shadow: none; padding: 0;">
-                        <input type="hidden" id="ed-id">
-                        
-                        <div style="grid-column: 1 / -1;" class="perfil-img-container">
-                            <label style="align-self: flex-start; margin-bottom: 5px;">Imagen de portada de la Feria</label>
-                            <img id="img-preview-edit-feria" class="card-img" style="border-radius: var(--radio); margin-bottom: 10px; width: 100%; object-fit: cover; height: 150px;">
-                            <input type="file" id="upload-edit-feria" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-edit-feria')">
-                        </div>
+                    <div style="grid-column: 1 / -1;" class="perfil-img-container">
+                        <label style="align-self: flex-start; margin-bottom: 5px;">Imagen de portada de la Feria</label>
+                        <img id="img-preview-edit-feria" class="card-img" style="border-radius: var(--radio); margin-bottom: 10px; width: 100%; object-fit: cover; height: 150px;">
+                        <input type="file" id="upload-edit-feria" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-edit-feria')">
+                    </div>
 
-                        <div style="grid-column: 1 / -1;"><label>Nombre del Evento (Solo lectura)</label><input type="text" id="ed-nombre" readonly style="background: var(--arena-calido);"></div>
-                        <div><label>Fecha</label><input type="date" id="ed-fecha" required></div>
-                        <div><label>Horario</label><input type="text" id="ed-horario" required></div>
-                        <div style="grid-column: 1 / -1;"><label>Ubicación</label><input type="text" id="ed-ubicacion" required></div>
-                        <div style="grid-column: 1 / -1;">
-                            <label>Cupos Totales</label><input type="number" id="ed-cupos" required>
-                            <small id="ed-cupos-help" style="color: var(--rojo-tomate); font-weight: bold;"></small>
-                        </div>
-                        <div style="grid-column: 1 / -1;"><label>Descripción General</label><textarea id="ed-desc" rows="3" required></textarea></div>
-                        <div style="grid-column: 1 / -1; text-align: right;"><button type="submit" id="btn-guardar-edicion" class="btn-primario">Guardar Cambios</button></div>
-                    </form>
-                </div>
+                    <div style="grid-column: 1 / -1;"><label>Nombre del Evento (Solo lectura)</label><input type="text" id="ed-nombre" readonly style="background: var(--arena-calido);"></div>
+                    <div><label>Fecha</label><input type="date" id="ed-fecha" required></div>
+                    <div><label>Horario</label><input type="text" id="ed-horario" required></div>
+                    <div style="grid-column: 1 / -1;"><label>Ubicación</label><input type="text" id="ed-ubicacion" required></div>
+                    <div style="grid-column: 1 / -1;">
+                        <label>Cupos Totales</label><input type="number" id="ed-cupos" required>
+                        <small id="ed-cupos-help" style="color: var(--rojo-tomate); font-weight: bold;"></small>
+                    </div>
+                    <div style="grid-column: 1 / -1;"><label>Descripción General</label><textarea id="ed-desc" rows="3" required></textarea></div>
+                    <div style="grid-column: 1 / -1; text-align: right;"><button type="submit" id="btn-guardar-edicion" class="btn-primario">Guardar Cambios</button></div>
+                </form>
+            </div>
 
-                <div style="background: var(--blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra);">
-                    <h3 style="margin-bottom: 20px; border-bottom: 2px solid var(--verde-menta); padding-bottom: 10px;">Feriantes Aceptados</h3>
-                    <p style="font-size: 0.9rem; color: gray; margin-bottom: 15px;">Listado de emprendedores cuya pre-reserva fue aceptada.</p>
-                    <div id="gestion-feriantes-aceptados"></div>
-                </div>
+            <div id="gestion-content-aceptados" class="oculto" style="background: var(--blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra);">
+                <h3 style="margin-bottom: 20px; border-bottom: 2px solid var(--verde-menta); padding-bottom: 10px;">Feriantes Aceptados</h3>
+                <p style="font-size: 0.9rem; color: gray; margin-bottom: 15px;">Listado de emprendedores cuya pre-reserva fue aceptada.</p>
+                <div id="gestion-feriantes-aceptados"></div>
+            </div>
+
+            <div id="gestion-content-solicitudes" class="oculto" style="background: var(--blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra);">
+                <h3 style="margin-bottom: 20px; border-bottom: 2px solid var(--verde-menta); padding-bottom: 10px;">Solicitudes de Postulación</h3>
+                <p style="font-size: 0.9rem; color: gray; margin-bottom: 15px;">Emprendedores que desean participar en esta feria.</p>
+                <div id="gestion-solicitudes-container"></div>
             </div>
         </section>
 
@@ -723,16 +727,24 @@
             switchOrgTabs: (tab) => {
                 document.getElementById('tab-ferias-activas').classList.toggle('active', tab === 'activas');
                 document.getElementById('tab-ferias-terminadas-org').classList.toggle('active', tab === 'terminadas');
-                document.getElementById('tab-solicitudes').classList.toggle('active', tab === 'solicitudes');
                 document.getElementById('tab-perfil-org').classList.toggle('active', tab === 'perfil');
                 
                 document.getElementById('org-lista-ferias').classList.toggle('oculto', tab !== 'activas' && tab !== 'terminadas');
                 document.getElementById('filtro-org-container').classList.toggle('oculto', tab !== 'activas' && tab !== 'terminadas');
-                document.getElementById('org-lista-solicitudes').classList.toggle('oculto', tab !== 'solicitudes');
                 document.getElementById('org-perfil-container').classList.toggle('oculto', tab !== 'perfil');
                 
                 if (tab === 'perfil') app.cargarPerfilOrg();
-                if (tab === 'activas' || tab === 'terminadas' || tab === 'solicitudes') app.renderOrgDashboard();
+                if (tab === 'activas' || tab === 'terminadas') app.renderOrgDashboard();
+            },
+
+            switchGestionTabs: (tab) => {
+                document.getElementById('gestion-tab-detalles').classList.toggle('active', tab === 'detalles');
+                document.getElementById('gestion-tab-aceptados').classList.toggle('active', tab === 'aceptados');
+                document.getElementById('gestion-tab-solicitudes').classList.toggle('active', tab === 'solicitudes');
+
+                document.getElementById('gestion-content-detalles').classList.toggle('oculto', tab !== 'detalles');
+                document.getElementById('gestion-content-aceptados').classList.toggle('oculto', tab !== 'aceptados');
+                document.getElementById('gestion-content-solicitudes').classList.toggle('oculto', tab !== 'solicitudes');
             },
 
             switchEntTabs: (tab) => {
@@ -763,7 +775,7 @@
                     return fueRealizada && asisti;
                 });
 
-                if(reservasCompletadas.length === 0){
+                if(reservadasCompletadas.length === 0){
                     grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">Aún no tienes asistencias a ferias finalizadas.</p>`;
                     return;
                 }
@@ -847,42 +859,6 @@
                     misFeriasVisuales.forEach(f => htmlFinal += generarCardFeria(f, viendoTerminadas));
                     tablaFerias.innerHTML = htmlFinal;
                 }
-
-                const misFeriasIds = todasMisFerias.map(f => f.id);
-                const misSolicitudes = state.reservas.filter(r => misFeriasIds.includes(r.idFeria));
-                const filtro = document.getElementById('filtro-solicitudes').value.toLowerCase();
-                const containerSol = document.getElementById('tabla-solicitudes-container');
-                
-                if(misSolicitudes.length === 0){
-                    containerSol.innerHTML = `<p class="text-center mt-2">No tienes solicitudes pendientes.</p>`;
-                } else {
-                    let htmlSol = `<table><thead><tr><th>Feria</th><th>Emprendedor</th><th>Rubro</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
-                    misSolicitudes.forEach(r => {
-                        const feria = state.ferias.find(f => f.id === r.idFeria);
-                        const feriante = state.usuarios.find(u => u.id === r.idEnt);
-                        if(filtro && !feria.nombre.toLowerCase().includes(filtro) && !feriante.name.toLowerCase().includes(filtro)) return;
-
-                        let acciones = '';
-                        if(r.estado === 'pendiente') {
-                            acciones = `
-                                <button class="btn-primario btn-chico" style="background-color: var(--verde-menta); color: var(--verde-bosque); margin-right: 5px;" onclick="app.gestionarReserva(${r.id}, 'a pagar')" title="Aceptar"><i class="fa-solid fa-check"></i></button>
-                                <button class="btn-primario btn-chico" style="margin-right: 5px;" onclick="app.gestionarReserva(${r.id}, 'rechazada')" title="Rechazar"><i class="fa-solid fa-xmark"></i></button>
-                            `;
-                        } else { acciones = `<span style="color: gray; font-size: 0.9rem; margin-right: 10px;">Resuelto</span>`; }
-                        
-                        acciones += `<button class="btn-outline btn-chico" style="margin-right: 5px;" onclick="app.abrirPerfilUsuario(${r.idEnt})" title="Ver Perfil Emprendedor"><i class="fa-solid fa-user"></i></button>`;
-                        if(r.adjuntos && (r.adjuntos.fotoUrl || r.adjuntos.videoUrl || r.adjuntos.carnetUrl)) {
-                            acciones += `<button class="btn-outline btn-chico" onclick="app.abrirAdjuntos(${r.id})" title="Ver Archivos Adjuntos"><i class="fa-solid fa-paperclip"></i></button>`;
-                        } else {
-                            acciones += `<button class="btn-outline btn-chico" disabled style="border-color: #e0e0e0; color: #a0a0a0;" title="Sin adjuntos"><i class="fa-solid fa-paperclip"></i></button>`;
-                        }
-                        
-                        const estadoClase = r.estado.replace(/ /g, '-').replace('¡', '').replace('!', '');
-                        htmlSol += `<tr><td>${feria.nombre}</td><td>${feriante.name}</td><td>${feriante.entData.rubro}</td><td><span class="badge badge-estado-${estadoClase}">${r.estado.toUpperCase()}</span></td><td style="white-space: nowrap;">${acciones}</td></tr>`;
-                    });
-                    htmlSol += `</tbody></table>`;
-                    containerSol.innerHTML = htmlSol;
-                }
             },
 
             abrirGestionFeria: (id) => {
@@ -933,6 +909,7 @@
                     document.getElementById('upload-edit-feria').classList.remove('oculto');
                 }
 
+                // --- 1. RENDERIZAR ACEPTADOS ---
                 const containerFeriantes = document.getElementById('gestion-feriantes-aceptados');
                 const aceptados = state.reservas.filter(r => r.idFeria === f.id && ['a pagar', 'reservada', 'pago total realizado', '¡nos vemos en la feria!', 'cancelada por falta de pago'].includes(r.estado.toLowerCase()));
                 
@@ -958,6 +935,48 @@
                 htmlAceptados += `</tbody></table></div>`;
                 containerFeriantes.innerHTML = htmlAceptados;
 
+                // --- 2. RENDERIZAR SOLICITUDES Y NOTIFICACIONES ---
+                const containerSol = document.getElementById('gestion-solicitudes-container');
+                const solicitudesParaMostrar = state.reservas.filter(r => r.idFeria === f.id && ['pendiente', 'rechazada'].includes(r.estado.toLowerCase()));
+                const pendientes = solicitudesParaMostrar.filter(r => r.estado === 'pendiente');
+
+                // Lógica del símbolo de actividad
+                const tabSol = document.getElementById('gestion-tab-solicitudes');
+                if(pendientes.length > 0) {
+                    tabSol.innerHTML = `Solicitudes Recibidas <i class="fa-solid fa-circle-exclamation fa-beat" style="color: var(--rojo-tomate); margin-left: 5px;" title="Hay ${pendientes.length} solicitud(es) nueva(s)"></i>`;
+                } else {
+                    tabSol.innerHTML = `Solicitudes Recibidas`;
+                }
+
+                if(solicitudesParaMostrar.length === 0){
+                    containerSol.innerHTML = `<p class="text-center mt-2">No hay solicitudes pendientes ni rechazadas.</p>`;
+                } else {
+                    let htmlSol = `<div class="table-responsive"><table><thead><tr><th>Emprendedor</th><th>Rubro</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
+                    solicitudesParaMostrar.forEach(r => {
+                        const feriante = state.usuarios.find(u => u.id === r.idEnt);
+                        let acciones = '';
+                        if(r.estado === 'pendiente') {
+                            acciones = `
+                                <button class="btn-primario btn-chico" style="background-color: var(--verde-menta); color: var(--verde-bosque); margin-right: 5px;" onclick="app.gestionarReserva(${r.id}, 'a pagar')" title="Aceptar"><i class="fa-solid fa-check"></i></button>
+                                <button class="btn-primario btn-chico" style="margin-right: 5px;" onclick="app.gestionarReserva(${r.id}, 'rechazada')" title="Rechazar"><i class="fa-solid fa-xmark"></i></button>
+                            `;
+                        } else { acciones = `<span style="color: gray; font-size: 0.9rem; margin-right: 10px;">Resuelto</span>`; }
+                        
+                        acciones += `<button class="btn-outline btn-chico" style="margin-right: 5px;" onclick="app.abrirPerfilUsuario(${r.idEnt})" title="Ver Perfil Emprendedor"><i class="fa-solid fa-user"></i></button>`;
+                        if(r.adjuntos && (r.adjuntos.fotoUrl || r.adjuntos.videoUrl || r.adjuntos.carnetUrl)) {
+                            acciones += `<button class="btn-outline btn-chico" onclick="app.abrirAdjuntos(${r.id})" title="Ver Archivos Adjuntos"><i class="fa-solid fa-paperclip"></i></button>`;
+                        } else {
+                            acciones += `<button class="btn-outline btn-chico" disabled style="border-color: #e0e0e0; color: #a0a0a0;" title="Sin adjuntos"><i class="fa-solid fa-paperclip"></i></button>`;
+                        }
+                        
+                        const estadoClase = r.estado.replace(/ /g, '-').replace('¡', '').replace('!', '');
+                        htmlSol += `<tr><td>${feriante.name}</td><td>${feriante.entData.rubro}</td><td><span class="badge badge-estado-${estadoClase}">${r.estado.toUpperCase()}</span></td><td style="white-space: nowrap;">${acciones}</td></tr>`;
+                    });
+                    htmlSol += `</tbody></table></div>`;
+                    containerSol.innerHTML = htmlSol;
+                }
+
+                app.switchGestionTabs('detalles'); // Asegura iniciar en la vista principal
                 app.mostrarVista('view-feria-gestion');
             },
 
@@ -1006,11 +1025,13 @@
                 const res = state.reservas.find(r => r.id === idReserva);
                 if(res) {
                     res.estado = nuevoEstado;
-                    if(nuevoEstado === 'rechazado') {
+                    if(nuevoEstado === 'rechazada') {
                         const feria = state.ferias.find(f => f.id === res.idFeria);
                         if(feria) { feria.cuposDisponibles++; }
                     }
-                    app.mostrarAlerta(`Reserva actualizada a ${nuevoEstado}`); app.renderOrgDashboard();
+                    app.mostrarAlerta(`Reserva actualizada a ${nuevoEstado}`); 
+                    app.abrirGestionFeria(res.idFeria); // Volvemos a renderizar esta feria
+                    app.switchGestionTabs('solicitudes'); // Mantenemos la vista en solicitudes
                 }
             },
 
