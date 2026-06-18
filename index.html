@@ -116,16 +116,44 @@
         .rol-card i { font-size: 4rem; color: var(--verde-bosque); margin-bottom: 15px; }
         .rol-card:hover { border-color: var(--verde-menta); background-color: #f0f9f5; transform: scale(1.05); }
 
-        /* === CHATBOT === */
+        /* === CHATBOT (MEJORADO) === */
         .chatbot-btn { position: fixed; bottom: 30px; right: 30px; background-color: var(--verde-bosque); color: var(--verde-menta); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; box-shadow: 0 6px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 1000; transition: var(--transicion); border: none; }
         .chatbot-btn:hover { transform: scale(1.1); background-color: var(--rojo-tomate); color: var(--blanco); }
-        .chatbot-modal { position: fixed; bottom: 100px; right: 30px; width: 320px; background: var(--blanco); border-radius: var(--radio); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--borde); height: 450px; resize: both; min-width: 300px; min-height: 350px; max-width: 90vw; max-height: 85vh; }
-        .chatbot-modal.ampliado { width: 500px !important; height: 75vh !important; }
+        .chatbot-modal { position: fixed; bottom: 100px; right: 30px; width: 360px; background: var(--blanco); border-radius: var(--radio); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--borde); height: 500px; resize: both; min-width: 320px; min-height: 400px; max-width: 90vw; max-height: 85vh; }
+        .chatbot-modal.ampliado { width: 550px !important; height: 75vh !important; }
         .chatbot-header { background: var(--verde-bosque); color: var(--blanco); padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .chatbot-body { padding: 15px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background-color: var(--arena-calido); }
-        .chat-msg { padding: 10px; border-radius: var(--radio); font-size: 0.9rem; max-width: 85%; }
-        .chat-bot { background: var(--blanco); align-self: flex-start; border-bottom-left-radius: 0; border: 1px solid var(--borde); }
-        .chat-user { background: var(--verde-menta); color: var(--verde-bosque); align-self: flex-end; border-bottom-right-radius: 0; font-weight: bold; }
+        .chatbot-body { padding: 15px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background-color: var(--arena-calido); scroll-behavior: smooth; }
+        
+        /* Contenedores de fila para avatares */
+        .chat-row { display: flex; gap: 10px; width: 100%; align-items: flex-end; }
+        .chat-row.user { justify-content: flex-end; }
+        .chat-row.bot { justify-content: flex-start; }
+        
+        /* Avatares */
+        .chat-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--blanco); flex-shrink: 0; font-size: 0.9rem; box-shadow: var(--sombra); }
+        .avatar-bot { background-color: var(--verde-bosque); }
+        .avatar-user { background-color: var(--rojo-tomate); }
+
+        .chat-msg { padding: 12px; border-radius: var(--radio); font-size: 0.9rem; max-width: 80%; line-height: 1.5; word-wrap: break-word; }
+        .chat-msg p { margin-bottom: 8px; }
+        .chat-msg p:last-child { margin-bottom: 0; }
+        .chat-msg ul { margin-left: 20px; margin-bottom: 8px; padding-left: 10px; }
+        .chat-msg li { margin-bottom: 4px; }
+        
+        .chat-bot { background: var(--blanco); border-bottom-left-radius: 0; border: 1px solid var(--borde); color: var(--carbon); }
+        .chat-user { background: var(--verde-menta); color: var(--verde-bosque); border-bottom-right-radius: 0; font-weight: 500; }
+
+        /* Animación "Escribiendo..." */
+        .typing-indicator { display: flex; gap: 4px; align-items: center; height: 16px; padding: 0 5px; }
+        .typing-indicator span { width: 6px; height: 6px; background-color: var(--verde-bosque); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* Input auto-resizable */
+        .chat-textarea { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid var(--borde); outline: none; resize: none; min-height: 42px; max-height: 120px; overflow-y: auto; font-family: inherit; font-size: 0.95rem; line-height: 1.4; background-color: var(--blanco); }
+        .chat-textarea::-webkit-scrollbar { width: 6px; }
+        .chat-textarea::-webkit-scrollbar-thumb { background-color: var(--borde); border-radius: 10px; }
 
         /* HEADER DE VISTAS */
         .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
@@ -489,11 +517,14 @@
             </div>
         </div>
         <div id="chatbot-body" class="chatbot-body">
-            <div class="chat-msg chat-bot">¡Hola! Soy la IA de FeriARG. Puedes escribirme cualquier duda.</div>
+            <div class="chat-row bot">
+                <div class="chat-avatar avatar-bot"><i class="fa-solid fa-robot"></i></div>
+                <div class="chat-msg chat-bot">¡Hola! Soy la IA de FeriARG. Puedes escribirme cualquier duda sobre la plataforma.</div>
+            </div>
         </div>
-        <div class="chatbot-input-area" style="padding: 10px; background: var(--blanco); border-top: 1px solid var(--borde); display: flex; gap: 8px; align-items: center;">
-            <input type="text" id="chat-input-texto" placeholder="Escribe tu mensaje..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid var(--borde); outline: none;" onkeypress="app.chequearEnter(event)">
-            <button onclick="app.procesarTextoLibre()" style="background: var(--verde-bosque); color: var(--blanco); border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
+        <div class="chatbot-input-area" style="padding: 10px; background: var(--blanco); border-top: 1px solid var(--borde); display: flex; gap: 8px; align-items: flex-end;">
+            <textarea id="chat-input-texto" class="chat-textarea" placeholder="Escribe tu mensaje..." rows="1" oninput="app.ajustarTextarea(event)" onkeydown="app.chequearEnter(event)"></textarea>
+            <button onclick="app.procesarTextoLibre()" style="background: var(--verde-bosque); color: var(--blanco); border: none; border-radius: 50%; width: 42px; height: 42px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-bottom: 2px;">
                 <i class="fa-solid fa-paper-plane"></i>
             </button>
         </div>
@@ -522,18 +553,12 @@
                 { id: 106, idOrg: 1, nombre: 'Expo Invierno', fecha: '2026-07-20', horario: '11:00 a 18:00', ubicacion: 'Pasaje Dardo Rocha', requisitos: 'Ninguno', rubros: 'Todos', desc: 'Edición especial.', costo: 4000, cuposTotales: 40, cuposDisponibles: 10, estado: 'Aceptada', imagen: '' }
             ],
             reservas: [
-                // Postulaciones del emprendedor (Santiago)
                 { id: 1001, idFeria: 101, idEnt: 2, estado: 'pendiente', fechaSolicitud: '2026-06-01', adjuntos: null },
                 { id: 1002, idFeria: 102, idEnt: 2, estado: 'a pagar', fechaSolicitud: '2026-06-02', adjuntos: null },
-                // Pago de stand bloqueado (fecha futura)
                 { id: 1003, idFeria: 103, idEnt: 2, estado: 'reservada', fechaSolicitud: '2026-05-15', pagoDesde: '2026-06-10', pagoHasta: '2026-06-15', adjuntos: null },
-                // Pago de stand habilitado (fecha actual válida)
                 { id: 1009, idFeria: 106, idEnt: 2, estado: 'reservada', fechaSolicitud: '2026-06-01', pagoDesde: '2026-06-01', pagoHasta: '2026-06-10', adjuntos: null },
-                
-                // Otras postulaciones para la gestión del Org
                 { id: 1004, idFeria: 101, idEnt: 3, estado: 'a pagar', fechaSolicitud: '2026-06-01', adjuntos: null },
                 { id: 1005, idFeria: 101, idEnt: 4, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-05-20', adjuntos: null },
-                // Asistencia registrada en feria finalizada
                 { id: 1010, idFeria: 105, idEnt: 2, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-02-01', adjuntos: null }
             ]
         };
@@ -545,6 +570,78 @@
 
         // --- 2. CONTROLADOR PRINCIPAL ---
         const app = {
+            
+            // Función mejorada para formatear Markdown (Listas Reales y Enlaces)
+            formatTexto: (texto) => {
+                if (!texto) return '';
+                let t = texto;
+                
+                // 1. Quitar el saludo insistente
+                t = t.replace(/^¡Hola! Soy.*?FeriARG\.?\s*/i, '');
+                t = t.replace(/^¡Hola!\s*/i, '');
+
+                // 2. Negritas y Cursivas
+                t = t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                t = t.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                // 3. Enlaces Markdown: [Texto](URL) -> <a href="URL">Texto</a>
+                t = t.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--verde-bosque); font-weight: bold; text-decoration: underline;">$1</a>');
+
+                // 4. Transformar saltos de línea y crear listas HTML <ul><li>
+                let lineas = t.split('\n');
+                let htmlFinal = '';
+                let enLista = false;
+
+                lineas.forEach(linea => {
+                    let l = linea.trim();
+                    if(l === '') return;
+
+                    // Detecta si la línea empieza con un guion o asterisco seguido de un espacio
+                    let esItemLista = l.match(/^[\-\*]\s+(.*)/);
+                    
+                    if(esItemLista) {
+                        if(!enLista) {
+                            htmlFinal += '<ul>';
+                            enLista = true;
+                        }
+                        htmlFinal += `<li>${esItemLista[1]}</li>`;
+                    } else {
+                        if(enLista) {
+                            htmlFinal += '</ul>';
+                            enLista = false;
+                        }
+                        htmlFinal += `<p>${l}</p>`;
+                    }
+                });
+
+                if(enLista) { htmlFinal += '</ul>'; } // Cierra la lista si el texto terminó siendo un ítem
+                
+                return htmlFinal;
+            },
+
+            // Funciones para manejar el Textarea auto-ajustable
+            ajustarTextarea: (e) => {
+                const el = e.target;
+                el.style.height = 'auto'; // Resetear altura
+                el.style.height = (el.scrollHeight) + 'px'; // Ajustar al contenido
+                if(el.value === '') el.style.height = '42px'; // Tamaño mínimo por defecto
+            },
+            chequearEnter: (e) => {
+                // Si presiona Enter sin Shift, envía el mensaje. Si presiona Shift+Enter, hace un salto de línea normal.
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // Evitar salto de línea
+                    app.procesarTextoLibre();
+                }
+            },
+
+            scrollToBottomChat: () => {
+                const body = document.getElementById('chatbot-body');
+                // Scroll nativo suave hacia el último elemento
+                if (body.lastElementChild) {
+                    body.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
+            },
+
             mostrarVista: (viewId) => {
                 document.querySelectorAll('main > section').forEach(sec => sec.classList.add('oculto'));
                 document.getElementById(viewId).classList.remove('oculto');
@@ -600,13 +697,11 @@
                     state.currentUser = user; 
                     app.mostrarAlerta(`¡Bienvenido/a ${user.name}!`);
                     
-                    // Verificamos si el usuario ya tiene un rol configurado
                     if (user.isOrgSetup) {
                         app.seleccionarRol('organizador');
                     } else if (user.isEntSetup) {
                         app.seleccionarRol('feriante');
                     } else {
-                        // Fallback: Si la cuenta fue creada pero nunca seleccionó un rol
                         app.mostrarVista('view-role-selection');
                     }
                 } else { 
@@ -775,7 +870,7 @@
                     return fueRealizada && asisti;
                 });
 
-                if(reservadasCompletadas.length === 0){
+                if(reservasCompletadas.length === 0){
                     grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">Aún no tienes asistencias a ferias finalizadas.</p>`;
                     return;
                 }
@@ -1308,21 +1403,37 @@
             // --- CHATBOT ---
             toggleChatbot: () => {
                 const panel = document.getElementById('chatbot-panel'); panel.classList.toggle('oculto');
-                if(!panel.classList.contains('oculto')) { const body = document.getElementById('chatbot-body'); body.scrollTop = body.scrollHeight; }
+                if(!panel.classList.contains('oculto')) { app.scrollToBottomChat(); }
             },
             ampliarChat: () => {
                 const panel = document.getElementById('chatbot-panel'); const icono = document.getElementById('icono-ampliar-chat');
                 panel.classList.toggle('ampliado');
                 if (panel.classList.contains('ampliado')) { icono.classList.remove('fa-expand'); icono.classList.add('fa-compress'); } 
                 else { icono.classList.remove('fa-compress'); icono.classList.add('fa-expand'); }
-                const body = document.getElementById('chatbot-body'); body.scrollTop = body.scrollHeight;
+                app.scrollToBottomChat();
             },
             enviarPreguntaChat: async (pregunta) => {
                 const body = document.getElementById('chatbot-body');
-                body.innerHTML += `<div class="chat-msg chat-user">${pregunta}</div>`; body.scrollTop = body.scrollHeight;
+                
+                // Mensaje del Usuario con Avatar
+                body.innerHTML += `
+                    <div class="chat-row user">
+                        <div class="chat-msg chat-user">${pregunta}</div>
+                        <div class="chat-avatar avatar-user"><i class="fa-solid fa-user"></i></div>
+                    </div>`; 
+                app.scrollToBottomChat();
+                
                 try {
                     const idCarga = 'carga-' + Date.now();
-                    body.innerHTML += `<div id="${idCarga}" class="chat-msg chat-bot" style="color: gray;">Pensando...</div>`; body.scrollTop = body.scrollHeight;
+                    // Animación de Escribiendo con Avatar
+                    body.innerHTML += `
+                        <div id="${idCarga}" class="chat-row bot">
+                            <div class="chat-avatar avatar-bot"><i class="fa-solid fa-robot"></i></div>
+                            <div class="chat-msg chat-bot" style="padding: 15px 12px;">
+                                <div class="typing-indicator"><span></span><span></span><span></span></div>
+                            </div>
+                        </div>`; 
+                    app.scrollToBottomChat();
                     
                     const peticion = await fetch('https://feriarg.onrender.com/api/chat', { 
                         method: 'POST', 
@@ -1332,17 +1443,47 @@
                     
                     const datos = await peticion.json();
                     document.getElementById(idCarga).remove();
-                    if (datos.respuesta) { body.innerHTML += `<div class="chat-msg chat-bot">${datos.respuesta}</div>`; } 
-                    else if (datos.error) { body.innerHTML += `<div class="chat-msg chat-bot" style="color: var(--rojo-tomate); font-weight: bold;">⚠️ ${datos.error}</div>`; } 
-                    else { body.innerHTML += `<div class="chat-msg chat-bot" style="color: var(--rojo-tomate);">Hubo un error desconocido.</div>`; }
-                    body.scrollTop = body.scrollHeight;
+                    
+                    if (datos.respuesta) { 
+                        body.innerHTML += `
+                            <div class="chat-row bot">
+                                <div class="chat-avatar avatar-bot"><i class="fa-solid fa-robot"></i></div>
+                                <div class="chat-msg chat-bot">${app.formatTexto(datos.respuesta)}</div>
+                            </div>`; 
+                    } 
+                    else if (datos.error) { 
+                        body.innerHTML += `
+                            <div class="chat-row bot">
+                                <div class="chat-avatar avatar-bot" style="background-color: var(--rojo-tomate);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                <div class="chat-msg chat-bot" style="color: var(--rojo-tomate); font-weight: bold;">⚠️ ${datos.error}</div>
+                            </div>`; 
+                    } 
+                    else { 
+                        body.innerHTML += `<div class="chat-row bot"><div class="chat-avatar avatar-bot"><i class="fa-solid fa-robot"></i></div><div class="chat-msg chat-bot" style="color: var(--rojo-tomate);">Hubo un error desconocido.</div></div>`; 
+                    }
+                    app.scrollToBottomChat();
                 } catch (error) {
                     console.error("Error:", error); 
-                    body.innerHTML += `<div class="chat-msg chat-bot" style="color: red;">Error al conectar con la IA. Por favor, intenta de nuevo más tarde.</div>`;
+                    const idCarga = Array.from(body.children).find(el => el.id && el.id.startsWith('carga-'));
+                    if(idCarga) idCarga.remove();
+
+                    body.innerHTML += `
+                        <div class="chat-row bot">
+                            <div class="chat-avatar avatar-bot" style="background-color: var(--rojo-tomate);"><i class="fa-solid fa-wifi"></i></div>
+                            <div class="chat-msg chat-bot" style="color: red;">Error de conexión. Por favor, intenta de nuevo más tarde.</div>
+                        </div>`;
+                    app.scrollToBottomChat();
                 }
             },
-            procesarTextoLibre: () => { const input = document.getElementById('chat-input-texto'); const mensaje = input.value.trim(); if (mensaje !== "") { app.enviarPreguntaChat(mensaje); input.value = ""; } },
-            chequearEnter: (e) => { if (e.key === 'Enter') { app.procesarTextoLibre(); } }
+            procesarTextoLibre: () => { 
+                const input = document.getElementById('chat-input-texto'); 
+                const mensaje = input.value.trim(); 
+                if (mensaje !== "") { 
+                    app.enviarPreguntaChat(mensaje); 
+                    input.value = ""; 
+                    input.style.height = '42px'; // Vuelve al tamaño original tras enviar
+                } 
+            }
         };
 
         document.addEventListener('click', (e) => { if (!e.target.closest('.menu-usuario')) { document.getElementById('dropdown-menu').classList.add('oculto'); } });
