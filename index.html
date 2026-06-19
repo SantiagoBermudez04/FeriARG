@@ -1434,7 +1434,8 @@
                 const f = state.ferias.find(x => x.id === idFeria);
                 if(!f) return;
                 
-                const yaPostulado = state.reservas.find(r => r.idFeria === f.id && r.idEnt === state.currentUser.id);
+                // Verificamos si hay un usuario logueado antes de buscar si ya se postuló
+                const yaPostulado = state.currentUser ? state.reservas.find(r => r.idFeria === f.id && r.idEnt === state.currentUser.id) : false;
                 let btnHtml = '';
                 
                 if(yaPostulado) { 
@@ -1443,6 +1444,10 @@
                 else if (f.cuposDisponibles <= 0) { 
                     btnHtml = `<button class="btn-primario" disabled style="width:100%; background:grey; padding: 15px;">Cupos Agotados</button>`; 
                 } 
+                else if (!state.currentUser) { 
+                    // Si entra por link y no está logueado, lo mandamos a ingresar
+                    btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem;" onclick="app.cerrarModalFeria(); app.mostrarVista('view-auth')">Iniciá sesión para postularte</button>`; 
+                }
                 else { 
                     btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem;" onclick="app.abrirModalPostulacion(${f.id})">Avanzar a Pre-reserva ($${f.costo})</button>`; 
                 }
@@ -1773,7 +1778,19 @@
             if (!e.target.closest('.menu-usuario')) { app.cerrarMenus(); } 
         });
         
-        app.mostrarVista('view-landing');
+        // --- INICIALIZACIÓN Y LECTURA DE URL (COMPARTIR) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const feriaIdCompartida = urlParams.get('feria');
+
+        app.mostrarVista('view-landing'); // Mostramos el inicio de fondo
+
+        // Si la URL trae un ID de feria, abrimos el popup de esa feria
+        if (feriaIdCompartida) {
+            // Un pequeño timeout asegura que la vista base cargó correctamente
+            setTimeout(() => {
+                app.abrirDetalleFeria(parseInt(feriaIdCompartida));
+            }, 100);
+        }
     </script>
 </body>
 </html>
