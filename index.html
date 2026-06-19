@@ -705,14 +705,14 @@
         // --- 1. MOCK DATA AMPLIADA ---
         const MOCK_DATA = {
             usuarios: [
-                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', dni: '11111111', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30-1111-2', ig: 'https://www.instagram.com/meridiano.feria/', fb: '', avatar: '' }, entData: null },
-                { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', dni: '22222222', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', productos: 'Pastelería artesanal, alfajores.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: '' } },
-                { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', dni: '33333333', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: '' } },
-                { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', dni: '44444444', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', productos: 'Cerámica.', ig: '', fb: '', avatar: '' } },
+                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', dni: '11111111', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30-1111-2', ig: 'https://www.instagram.com/meridiano.feria/', fb: '', avatar: './img/feriarg.png' }, entData: null },
+                { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', dni: '22222222', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', productos: 'Pastelería artesanal, alfajores.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: './img/santiago.png' } },
+                { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', dni: '33333333', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: './img/lucia.png' } },
+                { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', dni: '44444444', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', productos: 'Cerámica.', ig: '', fb: '', avatar: './img/marcos.png' } },
                 // Usuarios extra para engrosar lista de pendientes
-                { id: 5, name: 'Valeria', email: 'val@test.com', password: '123', dni: '55555555', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Plantas', productos: 'Cactus y suculentas.', ig: '', fb: '', avatar: '' } },
-                { id: 6, name: 'Tomás', email: 'tom@test.com', password: '123', dni: '66666666', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Accesorios', productos: 'Plata y acero.', ig: '', fb: '', avatar: '' } },
-                { id: 7, name: 'Camila', email: 'cam@test.com', password: '123', dni: '77777777', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Buzos estampados.', ig: '', fb: '', avatar: '' } }
+                { id: 5, name: 'Valeria', email: 'val@test.com', password: '123', dni: '55555555', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Plantas', productos: 'Cactus y suculentas.', ig: '', fb: '', avatar: './img/valeria.png' } },
+                { id: 6, name: 'Tomás', email: 'tom@test.com', password: '123', dni: '66666666', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Accesorios', productos: 'Plata y acero.', ig: '', fb: '', avatar: './img/tomas.png' } },
+                { id: 7, name: 'Camila', email: 'cam@test.com', password: '123', dni: '77777777', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Buzos estampados.', ig: '', fb: '', avatar: './img/camila.png' } }
             ],
             ferias: [
                 { id: 101, idOrg: 1, nombre: 'Feria de Diseño Plaza', fecha: '2026-06-20', horario: '14:00 a 20:00', ubicacion: 'Plaza Principal', requisitos: 'Llevar mesa.', rubros: 'Indumentaria, Diseño', desc: 'Gran feria de diseño independiente.', costo: 5000, cuposTotales: 50, cuposDisponibles: 12, estado: 'Aceptada', imagen: './img/feria-diseno-plaza.png' },
