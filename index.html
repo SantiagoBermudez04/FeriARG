@@ -292,8 +292,10 @@
                     <input type="text" id="edit-org-nombre" required>
                     <label>CUIT</label>
                     <input type="text" id="edit-org-cuit" required>
-                    <label>Redes Sociales</label>
-                    <input type="text" id="edit-org-redes">
+                    <label>Perfil de Instagram (URL)</label>
+                    <input type="url" id="edit-org-ig" placeholder="Ej: https://www.instagram.com/tuferia/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram">
+                    <label>Perfil de Facebook (URL)</label>
+                    <input type="url" id="edit-org-fb" placeholder="Ej: https://www.facebook.com/tuferia/" pattern="https?://.*facebook\.com/.*" title="Debe ser un link válido de Facebook">
                     <button type="submit" class="btn-primario mt-2">Guardar Cambios</button>
                 </form>
             </div>
@@ -409,7 +411,10 @@
                 <p class="text-center mb-2">Configurá los datos iniciales de tu organización</p>
                 <label>Nombre de la Organización</label><input type="text" id="org-nombre" required>
                 <label>CUIT</label><input type="text" id="org-cuit" required>
-                <label>Redes Sociales</label><input type="text" id="org-redes">
+                <label>Perfil de Instagram (URL)</label>
+                <input type="url" id="org-ig" placeholder="Ej: https://www.instagram.com/tuferia/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram">
+                <label>Perfil de Facebook (URL)</label>
+                <input type="url" id="org-fb" placeholder="Ej: https://www.facebook.com/tuferia/" pattern="https?://.*facebook\.com/.*" title="Debe ser un link válido de Facebook">
                 <button type="submit" class="btn-primario mt-2">Guardar y Empezar</button>
             </form>
         </section>
@@ -615,7 +620,7 @@
         // --- 1. MOCK DATA AMPLIADA ---
         const MOCK_DATA = {
             usuarios: [
-                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', dni: '11111111', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30-1111-2', socials: '@meridiano.feria', avatar: '' }, entData: null },
+                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', dni: '11111111', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30-1111-2', ig: 'https://www.instagram.com/meridiano.feria/', fb: '', avatar: '' }, entData: null },
                 { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', dni: '22222222', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', productos: 'Pastelería artesanal, alfajores.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: '' } },
                 { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', dni: '33333333', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: '' } },
                 { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', dni: '44444444', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', productos: 'Cerámica.', ig: '', fb: '', avatar: '' } },
@@ -986,6 +991,9 @@
                             </div>
                         </div>`;
                 } else if(u.isOrgSetup && u.orgData) {
+                    let igHtml = u.orgData.ig ? `<a href="${u.orgData.ig}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.orgData.ig}</a>` : 'No especificado';
+                    let fbHtml = u.orgData.fb ? `<a href="${u.orgData.fb}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.orgData.fb}</a>` : 'No especificado';
+
                     html = `
                         <div class="text-center" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
                             <img src="${u.orgData.avatar || 'https://via.placeholder.com/120?text=Logo'}" class="perfil-img-preview">
@@ -994,7 +1002,8 @@
                             <div style="background: var(--arena-calido); width: 100%; padding: 15px; border-radius: var(--radio); text-align: left; margin-top: 10px;">
                                 <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-user" style="color: var(--verde-bosque);"></i> Responsable:</strong> ${u.name}</p>
                                 <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-file-invoice" style="color: var(--verde-bosque);"></i> CUIT:</strong> ${u.orgData.cuit || 'No especificado'}</p>
-                                <p><strong><i class="fa-solid fa-hashtag" style="color: var(--verde-bosque);"></i> Redes:</strong> ${u.orgData.socials || 'No especificadas'}</p>
+                                <p style="margin-bottom: 8px; word-break: break-all;"><strong><i class="fa-brands fa-instagram" style="color: var(--verde-bosque);"></i> Instagram:</strong> <br>${igHtml}</p>
+                                <p style="word-break: break-all;"><strong><i class="fa-brands fa-facebook" style="color: var(--verde-bosque);"></i> Facebook:</strong> <br>${fbHtml}</p>
                             </div>
                         </div>`;
                 } else { html = `<p class="text-center">El usuario todavía no configuró su perfil.</p>`; }
@@ -1007,7 +1016,13 @@
 
             guardarOnboardingOrg: (e) => {
                 e.preventDefault();
-                state.currentUser.orgData = { name: document.getElementById('org-nombre').value, cuit: document.getElementById('org-cuit').value, socials: document.getElementById('org-redes').value, avatar: '' };
+                state.currentUser.orgData = { 
+                    name: document.getElementById('org-nombre').value, 
+                    cuit: document.getElementById('org-cuit').value, 
+                    ig: document.getElementById('org-ig').value, 
+                    fb: document.getElementById('org-fb').value, 
+                    avatar: '' 
+                };
                 state.currentUser.isOrgSetup = true; 
                 app.mostrarAlerta('Perfil Organizador configurado'); 
                 app.initOrgFlow();
@@ -1042,14 +1057,23 @@
             cargarPerfilOrg: () => {
                 const data = state.currentUser.orgData;
                 if(data) {
-                    document.getElementById('edit-org-nombre').value = data.name || ''; document.getElementById('edit-org-cuit').value = data.cuit || '';
-                    document.getElementById('edit-org-redes').value = data.socials || ''; if(data.avatar) document.getElementById('img-preview-org').src = data.avatar;
+                    document.getElementById('edit-org-nombre').value = data.name || ''; 
+                    document.getElementById('edit-org-cuit').value = data.cuit || '';
+                    document.getElementById('edit-org-ig').value = data.ig || ''; 
+                    document.getElementById('edit-org-fb').value = data.fb || ''; 
+                    if(data.avatar) document.getElementById('img-preview-org').src = data.avatar;
                 }
             },
 
             guardarPerfilOrg: (e) => {
                 e.preventDefault();
-                state.currentUser.orgData = { name: document.getElementById('edit-org-nombre').value, cuit: document.getElementById('edit-org-cuit').value, socials: document.getElementById('edit-org-redes').value, avatar: document.getElementById('img-preview-org').src };
+                state.currentUser.orgData = { 
+                    name: document.getElementById('edit-org-nombre').value, 
+                    cuit: document.getElementById('edit-org-cuit').value, 
+                    ig: document.getElementById('edit-org-ig').value, 
+                    fb: document.getElementById('edit-org-fb').value, 
+                    avatar: document.getElementById('img-preview-org').src 
+                };
                 app.mostrarAlerta('Perfil de organizador actualizado');
             },
 
