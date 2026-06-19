@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FeriARG - Conectando Ferias y Emprendedores en La Plata</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
         /* === VARIABLES DE COLOR Y DISEÑO === */
         :root {
@@ -41,7 +43,7 @@
         form { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; margin: 0 auto; background: var(--blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra); }
         input, select, textarea { padding: 12px; border: 1px solid var(--borde); border-radius: var(--radio); font-size: 1rem; background-color: var(--blanco); }
         input:focus, select:focus, textarea:focus { outline: 2px solid var(--verde-menta); }
-        input:invalid { outline: 2px solid #ffb3b3; } /* Estilo visual para campos inválidos (como URLs incorrectas) */
+        input:invalid { outline: 2px solid #ffb3b3; }
         input:disabled, select:disabled, textarea:disabled { background-color: #f5f5f5; color: #888; }
         label { font-weight: bold; font-size: 0.9rem; margin-bottom: -10px; color: var(--verde-bosque); }
 
@@ -125,7 +127,7 @@
         .rol-card i { font-size: 4rem; color: var(--verde-bosque); margin-bottom: 15px; }
         .rol-card:hover { border-color: var(--verde-menta); background-color: #f0f9f5; transform: scale(1.05); }
 
-        /* === CHATBOT (MEJORADO) === */
+        /* === CHATBOT === */
         .chatbot-btn { position: fixed; bottom: 30px; right: 30px; background-color: var(--verde-bosque); color: var(--verde-menta); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; box-shadow: 0 6px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 1000; transition: var(--transicion); border: none; }
         .chatbot-btn:hover { transform: scale(1.1); background-color: var(--rojo-tomate); color: var(--blanco); }
         .chatbot-modal { position: fixed; bottom: 100px; right: 30px; width: 360px; background: var(--blanco); border-radius: var(--radio); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--borde); height: 500px; resize: both; min-width: 320px; min-height: 400px; max-width: 90vw; max-height: 85vh; }
@@ -163,128 +165,53 @@
         .mb-2 { margin-bottom: 20px; }
         .alerta { padding: 15px; border-radius: var(--radio); margin-bottom: 20px; text-align: center; font-weight: bold; }
         .alerta-exito { background-color: var(--verde-menta); color: var(--verde-bosque); }
+        
         /* === UTILIDADES EXTRAS === */
-        /* 1. Ocultar flechitas de los inputs tipo número (DNI) */
         input[type="number"]::-webkit-inner-spin-button, 
         input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
+            -webkit-appearance: none; margin: 0; 
         }
-        input[type="number"] {
-            appearance: textfield;
-            -moz-appearance: textfield;
-        }
+        input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 
-        /* 2. Estructura para el campo de contraseña con el ícono de Ver/Ocultar */
-        .password-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            width: 100%;
-        }
-        .password-container input {
-            width: 100%;
-            padding-right: 40px; /* Deja espacio para que el texto no pise al ícono */
-        }
-        .toggle-password {
-            position: absolute;
-            right: 10px;
-            background: none;
-            border: none;
-            color: var(--verde-bosque);
-            cursor: pointer;
-            padding: 5px;
-        }
-        .toggle-password:hover {
-            color: var(--verde-menta);
-            transform: none; /* Evita que el ícono salte al hacer hover */
-        }
+        .password-container { position: relative; display: flex; align-items: center; width: 100%; }
+        .password-container input { width: 100%; padding-right: 40px; }
+        .toggle-password { position: absolute; right: 10px; background: none; border: none; color: var(--verde-bosque); cursor: pointer; padding: 5px; }
+        .toggle-password:hover { color: var(--verde-menta); transform: none; }
 
          
         /* === MEJORAS PARA CELULARES (RESPONSIVE) === */
         @media (max-width: 768px) {
-            /* General y contenedores */
             main { padding: 20px 10px; }
-            
-            /* Tarjetas y Estadísticas a 1 columna */
             .grid-cards { grid-template-columns: 1fr; } 
             .stat-box { min-width: 100%; }
             .rol-card { width: 100%; max-width: 320px; padding: 25px; }
-            
-            /* Formularios */
             form { padding: 20px; width: 100%; }
             #form-editar-feria { grid-template-columns: 1fr !important; }
-            
-            /* Header y Navegación */
             .logo { font-size: 1.2rem; }
             .btn-chico { padding: 5px 10px; font-size: 0.8rem; }
-            #user-greeting { display: none; } /* Ocultamos el saludo ("Hola, Nombre") para ahorrar espacio */
+            #user-greeting { display: none; } 
             
-            /* Pestañas (Tabs) scrolleables horizontalmente */
             .tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
             .tabs::-webkit-scrollbar { height: 4px; }
             .tabs::-webkit-scrollbar-thumb { background-color: var(--verde-menta); border-radius: 4px; }
             .tab-btn { flex: 0 0 auto; white-space: nowrap; }
             
-            /* Modales y Popups adaptados a la pantalla completa */
-            #modal-detalle-feria > div,
-            #modal-perfil-usuario > div,
-            #modal-postulacion > div,
-            #modal-baja-feriante > div,
-            #modal-adjuntos > div,
-            #modal-reporte > div {
-                padding: 20px !important;
-                margin: 10px;
-                max-height: 85vh;
-            }
+            #modal-detalle-feria > div, #modal-perfil-usuario > div, #modal-postulacion > div, #modal-baja-feriante > div, #modal-adjuntos > div, #modal-reporte > div { padding: 20px !important; margin: 10px; max-height: 85vh; }
             
-            /* Chatbot para que no se salga de la pantalla */
             .chatbot-modal { width: calc(100vw - 40px); right: 20px; bottom: 100px; min-width: unset; }
             .chatbot-modal.ampliado { width: calc(100vw - 20px) !important; right: 10px !important; height: 85vh !important; }
-            /* --- AJUSTES ESPECÍFICOS PARA CELULAR --- */
             
-            /* 1. Detalles de la feria (Pasar a 1 columna y ajustar la foto) */
-            #detalle-feria-content div[style*="grid-template-columns"] { 
-                grid-template-columns: 1fr !important; 
-                gap: 10px !important; 
-            }
-            #detalle-feria-content img { 
-                width: calc(100% + 40px) !important; 
-                margin: -20px -20px 15px -20px !important; 
-                height: 150px !important; 
-            }
+            #detalle-feria-content div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; gap: 10px !important; }
+            #detalle-feria-content img { width: calc(100% + 40px) !important; margin: -20px -20px 15px -20px !important; height: 150px !important; }
             
-            /* 2. Formularios: Apilar inputs que están lado a lado (Fechas, Horas, Cupos) */
-            form div[style*="gap: 10px"] { 
-                flex-direction: column; 
-                align-items: stretch !important;
-                gap: 15px !important; 
-            }
-            form div[style*="gap: 10px"] > div { 
-                width: 100%; 
-            }
+            form div[style*="gap: 10px"] { flex-direction: column; align-items: stretch !important; gap: 15px !important; }
+            form div[style*="gap: 10px"] > div { width: 100%; }
             
-            /* 3. Encabezados de vistas: Apilar título y botón */
-            .view-header { 
-                flex-direction: column; 
-                align-items: flex-start; 
-                gap: 15px;
-            }
-            .view-header button { 
-                width: 100%; 
-            }
+            .view-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .view-header button { width: 100%; }
             
-            /* 4. Menú de Notificaciones y Tablas */
-            .notif-dropdown { 
-                right: -50px; /* Lo empuja un poquito a la izquierda para centrarlo */
-                width: calc(100vw - 20px); 
-                max-width: 320px; 
-            }
-            th, td { 
-                padding: 10px; 
-                font-size: 0.85rem; /* Achica un poco la letra de las tablas para que entre más info */
-            }
-            
+            .notif-dropdown { right: -50px; width: calc(100vw - 20px); max-width: 320px; }
+            th, td { padding: 10px; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -352,9 +279,6 @@
                 <label>Email</label>
                 <input type="email" id="reg-email" required>
                 
-                <label>DNI</label>
-                <input type="number" id="reg-dni" required>
-                
                 <label>Contraseña</label>
                 <div class="password-container">
                     <input type="password" id="reg-pass" required minlength="8" title="Debe contener al menos 8 caracteres">
@@ -411,8 +335,9 @@
                 <button class="tab-btn" id="tab-perfil-org" onclick="app.switchOrgTabs('perfil')">Mi Perfil</button>
             </div>
 
-            <div id="filtro-org-container">
-                <input type="text" class="filtros mb-2" id="filtro-org-ferias" placeholder="Buscar feria por nombre, estado o lugar..." onkeyup="app.renderOrgDashboard()" style="max-width: 100%;">
+            <div id="filtro-org-container" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <input type="text" class="filtros mb-2" id="filtro-org-ferias" placeholder="Buscar feria por nombre, estado o lugar..." onkeyup="app.renderOrgDashboard()" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                <input type="date" class="filtros" id="filtro-org-fecha" onchange="app.renderOrgDashboard()" style="width: auto;">
             </div>
 
             <div id="org-lista-ferias" class="grid-cards"></div>
@@ -561,7 +486,7 @@
                 <h2 class="text-center">Perfil de Emprendedor</h2>
                 <p class="text-center mb-2">Completa tu vitrina virtual</p>
                 <label>Rubro Principal</label>
-                <select id="tu-id-aca" required>
+                <select id="ent-rubro" required>
                         <option value="">Selecciona un rubro...</option>
                         <option value="Indumentaria">Indumentaria y Textil</option>
                         <option value="Gastronomia">Gastronomía</option>
@@ -613,12 +538,25 @@
                 <button class="tab-btn" id="tab-mis-terminadas" onclick="app.switchEntTabs('terminadas')">Ferias Terminadas</button>
                 <button class="tab-btn" id="tab-perfil-ent" onclick="app.switchEntTabs('perfil')">Mi Perfil</button>
             </div>
+            
             <div id="ent-descubrir-container">
-                <input type="text" class="filtros mb-2" id="filtro-ferias" placeholder="Buscar por lugar, nombre o rubro..." onkeyup="app.renderEntExplorer()" style="max-width: 100%;">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <input type="text" class="filtros" id="filtro-ferias" placeholder="Buscar por lugar, nombre o rubro..." onkeyup="app.renderEntExplorer()" style="flex: 1; min-width: 200px;">
+                    <input type="date" class="filtros" id="filtro-fecha-descubrir" onchange="app.renderEntExplorer()" style="width: auto;">
+                </div>
                 <div id="grid-ferias-explorer" class="grid-cards"></div>
+                <div id="paginacion-explorer" style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;"></div>
             </div>
+            
             <div id="grid-ferias-postuladas" class="grid-cards oculto"></div>
-            <div id="grid-ferias-terminadas-ent" class="grid-cards oculto"></div>
+            
+            <div id="ent-terminadas-container" class="oculto">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <input type="date" class="filtros" id="filtro-fecha-terminadas" onchange="app.renderEntTerminadas()" style="width: auto;">
+                </div>
+                <div id="grid-ferias-terminadas-ent" class="grid-cards"></div>
+                <div id="paginacion-terminadas" style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;"></div>
+            </div>
 
             <div id="ent-perfil-container" class="oculto" style="margin-top: 20px;">
                 <form onsubmit="app.guardarPerfilEnt(event)">
@@ -628,7 +566,7 @@
                         <input type="file" id="upload-ent" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-ent')">
                     </div>
                     <label>Rubro Principal</label>
-                    <select id="tu-id-aca" required>
+                    <select id="edit-ent-rubro" required>
                         <option value="">Selecciona un rubro...</option>
                         <option value="Indumentaria">Indumentaria y Textil</option>
                         <option value="Gastronomia">Gastronomía</option>
@@ -734,6 +672,18 @@
 
     </main>
 
+    <div id="modal-cropper" class="oculto" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column;">
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 500px; text-align: center;">
+            <div style="max-height: 400px; overflow: hidden; margin-bottom: 15px;">
+                <img id="image-to-crop" style="max-width: 100%; display: block;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn-outline" onclick="app.cerrarCropper()">Cancelar</button>
+                <button class="btn-primario" onclick="app.confirmarCropper()">Recortar y Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <button class="chatbot-btn" onclick="app.toggleChatbot()">
         <i class="fa-solid fa-robot"></i>
     </button>
@@ -769,14 +719,13 @@
         // --- 1. MOCK DATA AMPLIADA ---
         const MOCK_DATA = {
             usuarios: [
-                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', dni: '11111111', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30-1111-2', ig: 'https://www.instagram.com/meridiano.feria/', fb: '', avatar: './img/feriarg.png' }, entData: null },
-                { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', dni: '22222222', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', productos: 'Pastelería artesanal, alfajores.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: './img/santiago.png' } },
-                { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', dni: '33333333', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: './img/lucia.png' } },
-                { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', dni: '44444444', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', productos: 'Cerámica.', ig: '', fb: '', avatar: './img/marcos.png' } },
-                // Usuarios extra para engrosar lista de pendientes
-                { id: 5, name: 'Valeria', email: 'val@test.com', password: '123', dni: '55555555', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Plantas', productos: 'Cactus y suculentas.', ig: '', fb: '', avatar: './img/valeria.png' } },
-                { id: 6, name: 'Tomás', email: 'tom@test.com', password: '123', dni: '66666666', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Accesorios', productos: 'Plata y acero.', ig: '', fb: '', avatar: './img/tomas.png' } },
-                { id: 7, name: 'Camila', email: 'cam@test.com', password: '123', dni: '77777777', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Buzos estampados.', ig: '', fb: '', avatar: './img/camila.png' } }
+                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30-1111-2', ig: 'https://www.instagram.com/meridiano.feria/', fb: '', avatar: './img/feriarg.png' }, entData: null },
+                { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', productos: 'Pastelería artesanal, alfajores.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: './img/santiago.png' } },
+                { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: './img/lucia.png' } },
+                { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', productos: 'Cerámica.', ig: '', fb: '', avatar: './img/marcos.png' } },
+                { id: 5, name: 'Valeria', email: 'val@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Plantas', productos: 'Cactus y suculentas.', ig: '', fb: '', avatar: './img/valeria.png' } },
+                { id: 6, name: 'Tomás', email: 'tom@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Accesorios', productos: 'Plata y acero.', ig: '', fb: '', avatar: './img/tomas.png' } },
+                { id: 7, name: 'Camila', email: 'cam@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Buzos estampados.', ig: '', fb: '', avatar: './img/camila.png' } }
             ],
             ferias: [
                 { id: 101, idOrg: 1, nombre: 'Feria de Diseño Plaza', fecha: '2026-06-20', horario: '14:00 a 20:00', ubicacion: 'Plaza Principal', requisitos: 'Llevar mesa.', rubros: 'Indumentaria, Diseño', desc: 'Gran feria de diseño independiente.', costo: 5000, cuposTotales: 50, cuposDisponibles: 12, estado: 'Aceptada', imagen: './img/feria-diseno-plaza.png' },
@@ -806,6 +755,7 @@
 
         const state = {
             currentUser: null, currentRole: null,
+            paginaDescubrir: 1, paginaTerminadas: 1,
             usuarios: [...MOCK_DATA.usuarios], ferias: [...MOCK_DATA.ferias], reservas: [...MOCK_DATA.reservas]
         };
 
@@ -889,7 +839,6 @@
                 app.actualizarNotificaciones();
             },
 
-            // --- LÓGICA DE COMPARTIR FERIA ---
             compartirFeria: async (idFeria) => {
                 const f = state.ferias.find(x => x.id === idFeria);
                 if (!f) return;
@@ -932,13 +881,16 @@
                     const pendientes = state.reservas.filter(r => misFeriasIds.includes(r.idFeria) && r.estado === 'pendiente');
                     count = pendientes.length;
 
-                    if(count > 0) {
-                        html += `
-                            <div class="notif-item" style="cursor:pointer;" onclick="app.initOrgFlow(); app.cerrarMenus();">
-                                <i class="fa-solid fa-circle-exclamation" style="color:var(--rojo-tomate);"></i>
-                                <div><strong>Nuevas Solicitudes</strong><br>Tienes ${count} emprendedor(es) esperando respuesta en tus ferias.</div>
-                            </div>
-                        `;
+                    if (pendientes.length > 0) {
+                        pendientes.forEach(p => {
+                            const f = state.ferias.find(x => x.id === p.idFeria);
+                            html += `
+                                <div class="notif-item" style="cursor:pointer;" onclick="app.abrirGestionFeria(${f.id}); app.switchGestionTabs('solicitudes'); app.cerrarMenus(); document.getElementById('notif-dropdown').classList.add('oculto'); window.scrollTo(0,0);">
+                                    <i class="fa-solid fa-circle-exclamation" style="color:var(--rojo-tomate);"></i>
+                                    <div><strong>Nueva Solicitud</strong><br>Alguien quiere sumarse a ${f.nombre}.</div>
+                                </div>
+                            `;
+                        });
                     }
                     
                     // Estadísticas Organizador
@@ -961,7 +913,7 @@
                     aPagarReserva.forEach(r => {
                         const f = state.ferias.find(x => x.id === r.idFeria);
                         html += `
-                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('postulaciones'); app.cerrarMenus();">
+                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('postulaciones'); app.cerrarMenus(); document.getElementById('notif-dropdown').classList.add('oculto'); window.scrollTo(0,0);">
                                 <i class="fa-solid fa-money-bill-wave" style="color:var(--verde-bosque);"></i>
                                 <div><strong>¡Feria Aceptada!</strong><br>Te aceptaron en ${f.nombre}. Paga la reserva para asegurar tu lugar.</div>
                             </div>
@@ -971,7 +923,7 @@
                     aPagarStand.forEach(r => {
                         const f = state.ferias.find(x => x.id === r.idFeria);
                         html += `
-                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('postulaciones'); app.cerrarMenus();">
+                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('postulaciones'); app.cerrarMenus(); document.getElementById('notif-dropdown').classList.add('oculto'); window.scrollTo(0,0);">
                                 <i class="fa-solid fa-clock" style="color:#e0a800;"></i>
                                 <div><strong>Recordatorio de Pago</strong><br>Recuerda abonar el total del stand para ${f.nombre}.</div>
                             </div>
@@ -981,7 +933,7 @@
                     rechazadas.forEach(r => {
                         const f = state.ferias.find(x => x.id === r.idFeria);
                         html += `
-                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('postulaciones'); app.cerrarMenus();">
+                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('postulaciones'); app.cerrarMenus(); document.getElementById('notif-dropdown').classList.add('oculto'); window.scrollTo(0,0);">
                                 <i class="fa-solid fa-circle-xmark" style="color:var(--rojo-tomate);"></i>
                                 <div><strong>Reserva Rechazada</strong><br>Tu solicitud para ${f.nombre} fue rechazada o cancelada.</div>
                             </div>
@@ -1072,7 +1024,6 @@
                     else if (user.isEntSetup) { app.seleccionarRol('feriante'); } 
                     else { app.mostrarVista('view-role-selection'); }
 
-                    // --- Recuperar la feria compartida después de loguearse ---
                     const urlParams = new URLSearchParams(window.location.search);
                     const feriaId = urlParams.get('feria');
                     if (feriaId && (user.isOrgSetup || user.isEntSetup)) {
@@ -1089,23 +1040,20 @@
 
                 if (pass !== passConfirm) {
                     alert('Las contraseñas no coinciden. Por favor, intentalo de nuevo.');
-                    return; // Frena la ejecución, no crea la cuenta
+                    return; 
                 }
 
                 const nuevoUser = {
                     id: Date.now(), name: document.getElementById('reg-nombre').value, email: document.getElementById('reg-email').value, 
-                    dni: document.getElementById('reg-dni').value, password: pass, 
-                    isOrgSetup: false, isEntSetup: false, orgData: null, entData: null
+                    password: pass, isOrgSetup: false, isEntSetup: false, orgData: null, entData: null
                 };
                 state.usuarios.push(nuevoUser); state.currentUser = nuevoUser;
                 app.actualizarHeader(); app.mostrarAlerta('Cuenta creada exitosamente');
                 
-                // Limpia el formulario
                 document.getElementById('form-registro').reset();
                 app.mostrarVista('view-role-selection');
             },
 
-            // --- NUEVA FUNCIÓN: VISIBILIDAD DE CONTRASEÑA ---
             togglePasswordVisibilidad: (inputId, botonElemento) => {
                 const input = document.getElementById(inputId);
                 const icono = botonElemento.querySelector('i');
@@ -1113,11 +1061,11 @@
                 if (input.type === "password") {
                     input.type = "text";
                     icono.classList.remove('fa-eye');
-                    icono.classList.add('fa-eye-slash'); // Ojito tachado
+                    icono.classList.add('fa-eye-slash');
                 } else {
                     input.type = "password";
                     icono.classList.remove('fa-eye-slash');
-                    icono.classList.add('fa-eye'); // Ojito normal
+                    icono.classList.add('fa-eye');
                 }
             },
 
@@ -1134,13 +1082,36 @@
 
             cambiarRol: () => { app.cerrarMenus(); app.mostrarVista('view-role-selection'); },
 
+            cropperInstance: null,
+            targetImgId: null,
+
             previewImage: (inputElement, imgElementId) => {
                 const file = inputElement.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(e) { document.getElementById(imgElementId).src = e.target.result; }
+                    reader.onload = function(e) {
+                        app.targetImgId = imgElementId;
+                        document.getElementById('image-to-crop').src = e.target.result;
+                        document.getElementById('modal-cropper').classList.remove('oculto');
+                        
+                        if (app.cropperInstance) app.cropperInstance.destroy();
+                        app.cropperInstance = new Cropper(document.getElementById('image-to-crop'), {
+                            aspectRatio: imgElementId.includes('ent') || imgElementId.includes('org') ? 1 : 16/9,
+                            viewMode: 1
+                        });
+                    }
                     reader.readAsDataURL(file);
                 }
+            },
+            cerrarCropper: () => {
+                document.getElementById('modal-cropper').classList.add('oculto');
+                if (app.cropperInstance) app.cropperInstance.destroy();
+                app.targetImgId = null;
+            },
+            confirmarCropper: () => {
+                const canvas = app.cropperInstance.getCroppedCanvas();
+                document.getElementById(app.targetImgId).src = canvas.toDataURL();
+                app.cerrarCropper();
             },
 
             abrirPerfilUsuario: (idUsuario) => {
@@ -1283,6 +1254,12 @@
                 document.getElementById('filtro-org-container').classList.toggle('oculto', tab !== 'activas' && tab !== 'terminadas');
                 document.getElementById('org-perfil-container').classList.toggle('oculto', tab !== 'perfil');
                 
+                const inputFechaOrg = document.getElementById('filtro-org-fecha');
+                if (inputFechaOrg) {
+                    if (tab === 'activas') { inputFechaOrg.min = fechaActual; } 
+                    else { inputFechaOrg.removeAttribute('min'); }
+                }
+
                 if (tab === 'perfil') app.cargarPerfilOrg();
                 if (tab === 'activas' || tab === 'terminadas') app.renderOrgDashboard();
             },
@@ -1292,16 +1269,24 @@
             renderOrgDashboard: () => {
                 const todasMisFerias = state.ferias.filter(f => f.idOrg === state.currentUser.id);
                 let misFeriasVisuales = [...todasMisFerias];
-                const filtroFeria = document.getElementById('filtro-org-ferias').value.toLowerCase();
                 
-                if(filtroFeria) {
-                    misFeriasVisuales = misFeriasVisuales.filter(f => f.nombre.toLowerCase().includes(filtroFeria) || f.ubicacion.toLowerCase().includes(filtroFeria) || (f.estado && f.estado.toLowerCase().includes(filtroFeria)));
+                const filtroTexto = document.getElementById('filtro-org-ferias').value.toLowerCase();
+                const filtroFecha = document.getElementById('filtro-org-fecha').value;
+                
+                if(filtroTexto) {
+                    misFeriasVisuales = misFeriasVisuales.filter(f => f.nombre.toLowerCase().includes(filtroTexto) || f.ubicacion.toLowerCase().includes(filtroTexto) || (f.estado && f.estado.toLowerCase().includes(filtroTexto)));
+                }
+                
+                if(filtroFecha) {
+                    misFeriasVisuales = misFeriasVisuales.filter(f => f.fecha === filtroFecha);
                 }
 
                 const viendoTerminadas = document.getElementById('tab-ferias-terminadas-org').classList.contains('active');
 
                 if (viendoTerminadas) { misFeriasVisuales = misFeriasVisuales.filter(f => ['realizada', 'cancelada'].includes((f.estado || '').toLowerCase())); } 
                 else { misFeriasVisuales = misFeriasVisuales.filter(f => !['realizada', 'cancelada'].includes((f.estado || '').toLowerCase())); }
+
+                misFeriasVisuales.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
                 const tablaFerias = document.getElementById('org-lista-ferias');
                 tablaFerias.innerHTML = '';
@@ -1623,7 +1608,7 @@
                 
                 document.getElementById('ent-descubrir-container').classList.toggle('oculto', tab !== 'descubrir');
                 document.getElementById('grid-ferias-postuladas').classList.toggle('oculto', tab !== 'postulaciones');
-                document.getElementById('grid-ferias-terminadas-ent').classList.toggle('oculto', tab !== 'terminadas');
+                document.getElementById('ent-terminadas-container').classList.toggle('oculto', tab !== 'terminadas');
                 document.getElementById('ent-perfil-container').classList.toggle('oculto', tab !== 'perfil');
                 
                 if (tab === 'descubrir') { app.renderEntExplorer(); } 
@@ -1638,19 +1623,34 @@
 
             renderEntExplorer: () => {
                 const grid = document.getElementById('grid-ferias-explorer');
-                const filtro = document.getElementById('filtro-ferias').value.toLowerCase();
+                const filtroTexto = document.getElementById('filtro-ferias').value.toLowerCase();
+                const filtroFecha = document.getElementById('filtro-fecha-descubrir').value;
                 grid.innerHTML = '';
                 
-                const feriasVisibles = state.ferias.filter(f => {
-                    const matchBusqueda = f.nombre.toLowerCase().includes(filtro) || f.ubicacion.toLowerCase().includes(filtro) || f.rubros.toLowerCase().includes(filtro);
+                document.getElementById('filtro-fecha-descubrir').min = fechaActual;
+                
+                let feriasVisibles = state.ferias.filter(f => {
+                    const matchBusqueda = f.nombre.toLowerCase().includes(filtroTexto) || f.ubicacion.toLowerCase().includes(filtroTexto) || f.rubros.toLowerCase().includes(filtroTexto);
+                    const matchFecha = filtroFecha ? f.fecha === filtroFecha : true;
                     const estaActiva = !['cancelada', 'realizada', 'en revisión'].includes((f.estado || '').toLowerCase());
                     const yaPostulado = state.reservas.some(r => r.idFeria === f.id && r.idEnt === state.currentUser.id);
-                    return matchBusqueda && estaActiva && !yaPostulado;
+                    return matchBusqueda && matchFecha && estaActiva && !yaPostulado;
                 });
 
-                if(feriasVisibles.length === 0){ grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">No encontramos ferias nuevas disponibles para postularte.</p>`; return; }
+                feriasVisibles.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
-                feriasVisibles.forEach(f => {
+                const itemsPorPagina = 9;
+                const totalPaginas = Math.ceil(feriasVisibles.length / itemsPorPagina);
+                const inicio = (state.paginaDescubrir - 1) * itemsPorPagina;
+                const paginadas = feriasVisibles.slice(inicio, inicio + itemsPorPagina);
+
+                if(feriasVisibles.length === 0){ 
+                    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">No encontramos ferias nuevas con esos filtros.</p>`; 
+                    document.getElementById('paginacion-explorer').innerHTML = '';
+                    return; 
+                }
+
+                paginadas.forEach(f => {
                     const org = state.usuarios.find(u => u.id === f.idOrg) || { orgData: { name: 'Org. Independiente' } };
                     const badgeCupo = f.cuposDisponibles > 0 ? `<span class="badge cupos">${f.cuposDisponibles} cupos libres</span>` : `<span class="badge agotado">Agotado</span>`;
                     const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
@@ -1679,6 +1679,15 @@
                         </div>
                     `;
                 });
+
+                let pagHtml = '';
+                if (state.paginaDescubrir > 1) {
+                    pagHtml += `<button class="btn-outline" onclick="state.paginaDescubrir--; app.renderEntExplorer()">Anterior</button>`;
+                }
+                if (state.paginaDescubrir < totalPaginas) {
+                    pagHtml += `<button class="btn-outline" onclick="state.paginaDescubrir++; app.renderEntExplorer()">Siguiente</button>`;
+                }
+                document.getElementById('paginacion-explorer').innerHTML = pagHtml;
             },
 
             abrirDetalleFeria: (idFeria) => {
@@ -1772,23 +1781,38 @@
 
             renderEntTerminadas: () => {
                 const grid = document.getElementById('grid-ferias-terminadas-ent');
+                const filtroFecha = document.getElementById('filtro-fecha-terminadas').value;
                 const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
                 
-                const reservasTerminadas = misReservas.filter(r => {
+                let reservasTerminadas = misReservas.filter(r => {
                     const feria = state.ferias.find(f => f.id === r.idFeria);
                     if (!feria) return false;
                     const fTerminada = ['realizada', 'cancelada'].includes(feria.estado.toLowerCase());
                     const rMuerta = ['rechazada', 'cancelada por organizador', 'cancelada por falta de pago'].includes(r.estado.toLowerCase());
-                    return fTerminada || rMuerta;
+                    
+                    const matchFecha = filtroFecha ? feria.fecha === filtroFecha : true;
+                    return (fTerminada || rMuerta) && matchFecha;
                 });
 
+                reservasTerminadas.sort((a, b) => {
+                    const fA = state.ferias.find(f => f.id === a.idFeria);
+                    const fB = state.ferias.find(f => f.id === b.idFeria);
+                    return new Date(fA.fecha) - new Date(fB.fecha);
+                });
+
+                const itemsPorPagina = 9;
+                const totalPaginas = Math.ceil(reservasTerminadas.length / itemsPorPagina);
+                const inicio = (state.paginaTerminadas - 1) * itemsPorPagina;
+                const paginadas = reservasTerminadas.slice(inicio, inicio + itemsPorPagina);
+
                 if(reservasTerminadas.length === 0){
-                    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">Aún no tienes historial de ferias terminadas o canceladas.</p>`;
+                    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">Aún no tienes historial o no hay coincidencias con la fecha.</p>`;
+                    document.getElementById('paginacion-terminadas').innerHTML = '';
                     return;
                 }
 
                 let htmlFinal = '';
-                reservasTerminadas.forEach(r => {
+                paginadas.forEach(r => {
                     const f = state.ferias.find(x => x.id === r.idFeria);
                     const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
                     
@@ -1828,18 +1852,33 @@
                     `;
                 });
                 grid.innerHTML = htmlFinal;
+
+                let pagHtml = '';
+                if (state.paginaTerminadas > 1) {
+                    pagHtml += `<button class="btn-outline" onclick="state.paginaTerminadas--; app.renderEntTerminadas()">Anterior</button>`;
+                }
+                if (state.paginaTerminadas < totalPaginas) {
+                    pagHtml += `<button class="btn-outline" onclick="state.paginaTerminadas++; app.renderEntTerminadas()">Siguiente</button>`;
+                }
+                document.getElementById('paginacion-terminadas').innerHTML = pagHtml;
             },
 
             renderMisPostulaciones: () => {
                 const grid = document.getElementById('grid-ferias-postuladas');
                 const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
                 
-                const reservasActivas = misReservas.filter(r => {
+                let reservasActivas = misReservas.filter(r => {
                     const feria = state.ferias.find(f => f.id === r.idFeria);
                     if (!feria) return false;
                     const fTerminada = ['realizada', 'cancelada'].includes(feria.estado.toLowerCase());
                     const rMuerta = ['rechazada', 'cancelada por organizador', 'cancelada por falta de pago'].includes(r.estado.toLowerCase());
                     return !fTerminada && !rMuerta;
+                });
+
+                reservasActivas.sort((a, b) => {
+                    const fA = state.ferias.find(f => f.id === a.idFeria);
+                    const fB = state.ferias.find(f => f.id === b.idFeria);
+                    return new Date(fA.fecha) - new Date(fB.fecha);
                 });
 
                 if(reservasActivas.length === 0){
