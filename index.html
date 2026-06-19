@@ -633,7 +633,7 @@
                 { id: 1004, idFeria: 101, idEnt: 3, estado: 'a pagar', fechaSolicitud: '2026-06-01', adjuntos: null },
                 { id: 1005, idFeria: 101, idEnt: 4, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-05-20', adjuntos: null },
                 { id: 1010, idFeria: 105, idEnt: 2, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-02-01', adjuntos: null },
-                // Mock de Solicitud Rechazada para la vista Feriante
+                // Mock de Solicitud textRechazada para la vista Feriante
                 { id: 1011, idFeria: 104, idEnt: 2, estado: 'rechazada', fechaSolicitud: '2026-05-10', adjuntos: null, motivoRechazo: 'No cumples con el requisito de ser estudiante.' },
                 // + MÁS SOLICITUDES RECIBIDAS PENDIENTES PARA EL ORG (Feria 101)
                 { id: 1012, idFeria: 101, idEnt: 5, estado: 'pendiente', fechaSolicitud: '2026-06-05', adjuntos: null },
@@ -658,7 +658,7 @@
                 t = t.replace(/^¡Hola! Soy.*?FeriARG\.?\s*/i, '');
                 t = t.replace(/^¡Hola!\s*/i, '');
 
-                t = t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                t = t.replace(/\*\*(.*?)\*\"/g, '<strong>$1</strong>');
                 t = t.replace(/\*(.*?)\*/g, '<em>$1</em>');
                 t = t.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--verde-bosque); font-weight: bold; text-decoration: underline;">$1</a>');
 
@@ -725,6 +725,34 @@
                 document.getElementById('notif-dropdown').classList.toggle('oculto');
                 document.getElementById('dropdown-menu').classList.add('oculto'); 
                 app.actualizarNotificaciones();
+            },
+
+            // --- LÓGICA DE COMPARTIR FERIA ---
+            compartirFeria: async (idFeria) => {
+                const f = state.ferias.find(x => x.id === idFeria);
+                if (!f) return;
+                
+                const urlFeria = `${window.location.origin}/?feria=${f.id}`;
+                const mensaje = `¡Mirá esta feria en FeriARG: ${f.nombre}! 🎪✨\nTe comparto el link: `;
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'FeriARG',
+                            text: mensaje,
+                            url: urlFeria
+                        });
+                    } catch (error) {
+                        console.log('Error o cancelación al compartir nativamente', error);
+                    }
+                } else {
+                    try {
+                        await navigator.clipboard.writeText(`${mensaje} ${urlFeria}`);
+                        app.mostrarAlerta('¡Enlace copiado al portapapeles!');
+                    } catch (error) {
+                        app.mostrarAlerta('Error al copiar el enlace.');
+                    }
+                }
             },
 
             // --- SISTEMA DE NOTIFICACIONES Y ESTADÍSTICAS ---
@@ -1033,7 +1061,6 @@
                     const btnLabel = esHistorial ? "Ver Detalles" : "Gestionar";
                     const badgeHtml = estadoReal.toLowerCase() === 'aceptada' ? '' : `<span class="badge ${estadoReal.toLowerCase().replace(/ /g, '-')}" style="align-self: flex-start;">${estadoReal.toUpperCase()}</span>`;
                     
-                    // Cuenta solicitudes pendientes para mostrar icono
                     const solicitudesAca = state.reservas.filter(r => r.idFeria === f.id && r.estado === 'pendiente').length;
                     const badgeSol = (!esHistorial && solicitudesAca > 0) ? `<span style="color:var(--rojo-tomate); float:right;" title="${solicitudesAca} solicitudes nuevas"><i class="fa-solid fa-circle-exclamation fa-beat"></i></span>` : '';
 
@@ -1041,8 +1068,9 @@
                         <div class="card">
                             <img src="${imgSrc}" class="card-img" alt="Feria">
                             <div class="card-body">
-                                <div style="display:flex; justify-content:space-between; width:100%;">
-                                    ${badgeHtml} ${badgeSol}
+                                <div style="display:flex; justify-content:space-between; width:100%; align-items: flex-start;">
+                                    <div>${badgeHtml} ${badgeSol}</div>
+                                    <button class="btn-outline btn-chico" style="border: none; padding: 0 5px; cursor: pointer; color: var(--verde-bosque);" onclick="app.compartirFeria(${f.id})" title="Compartir Feria"><i class="fa-solid fa-share-nodes"></i></button>
                                 </div>
                                 <div class="card-title">${f.nombre}</div>
                                 <div class="card-info"><i class="fa-regular fa-calendar"></i> ${f.fecha}</div>
@@ -1225,7 +1253,6 @@
                     if(f) {
                         f.estado = 'Cancelada';
                         
-                        // Cancelar reservas relacionadas
                         state.reservas.forEach(r => {
                             if(r.idFeria === id && ['pendiente', 'a pagar', 'reservada'].includes(r.estado)) {
                                 r.estado = 'cancelada por organizador';
@@ -1277,7 +1304,6 @@
                 app.initOrgFlow();
             },
 
-            // BAJA DE FERIANTE ESPECÍFICO (ORGANIZADOR)
             abrirModalBajaFeriante: (idReserva) => {
                 document.getElementById('baja-reserva-id').value = idReserva;
                 document.getElementById('baja-motivo-texto').value = '';
@@ -1386,6 +1412,7 @@
                                     <span style="font-size: 0.8rem; color: gray; flex-grow: 1;"><i class="fa-solid fa-building"></i> ${org.orgData ? org.orgData.name : 'Organizador'}</span>
                                     <div style="display:flex; gap: 5px; align-items: center;">
                                         ${badgeCupo}
+                                        <button class="btn-outline btn-chico" style="border: none; color: var(--verde-bosque); padding: 0 5px; cursor: pointer;" onclick="app.compartirFeria(${f.id})" title="Compartir Feria"><i class="fa-solid fa-share-nodes"></i></button>
                                         <button class="btn-outline btn-chico" style="border: none; color: var(--rojo-tomate); padding: 0 5px; cursor: pointer;" onclick="app.abrirModalReporte(${f.id})" title="Reportar feria"><i class="fa-solid fa-flag"></i></button>
                                     </div>
                                 </div>
@@ -1528,7 +1555,10 @@
                         <div class="card" style="opacity: ${opacidad};">
                             <img src="${imgSrc}" class="card-img" alt="Feria" style="filter: grayscale(40%);">
                             <div class="card-body">
-                                <span class="badge" style="background-color: ${badgeColor}; color: white; align-self: flex-start; margin-bottom: 10px;">${badgeText}</span>
+                                <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                    <span class="badge" style="background-color: ${badgeColor}; color: white;">${badgeText}</span>
+                                    <button class="btn-outline btn-chico" style="border: none; color: var(--verde-bosque); padding: 0 5px; cursor: pointer;" onclick="app.compartirFeria(${f.id})" title="Compartir Feria"><i class="fa-solid fa-share-nodes"></i></button>
+                                </div>
                                 <div class="card-title">${f.nombre}</div>
                                 <div class="card-info mt-2">${iconInfo}</div>
                                 <div class="card-info"><i class="fa-solid fa-location-dot"></i> ${f.ubicacion}</div>
@@ -1615,7 +1645,10 @@
                         <div class="card">
                             <img src="${imgSrc}" class="card-img" alt="Feria">
                             <div class="card-body">
-                                <span class="badge badge-estado-${estadoClase}" style="align-self: flex-start; margin-bottom: 10px;">${r.estado.toUpperCase()}</span>
+                                <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                    <span class="badge badge-estado-${estadoClase}">${r.estado.toUpperCase()}</span>
+                                    <button class="btn-outline btn-chico" style="border: none; color: var(--verde-bosque); padding: 0 5px; cursor: pointer;" onclick="app.compartirFeria(${f.id})" title="Compartir Feria"><i class="fa-solid fa-share-nodes"></i></button>
+                                </div>
                                 <div class="card-title">${f.nombre}</div>
                                 <div class="card-info mt-2"><i class="fa-regular fa-calendar"></i> ${f.fecha}</div>
                                 <div class="card-info"><i class="fa-solid fa-location-dot"></i> ${f.ubicacion}</div>
