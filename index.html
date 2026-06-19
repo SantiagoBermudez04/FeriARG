@@ -41,6 +41,7 @@
         form { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; margin: 0 auto; background: var(--blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra); }
         input, select, textarea { padding: 12px; border: 1px solid var(--borde); border-radius: var(--radio); font-size: 1rem; background-color: var(--blanco); }
         input:focus, select:focus, textarea:focus { outline: 2px solid var(--verde-menta); }
+        input:invalid { outline: 2px solid #ffb3b3; } /* Estilo visual para campos inválidos (como URLs incorrectas) */
         input:disabled, select:disabled, textarea:disabled { background-color: #f5f5f5; color: #888; }
         label { font-weight: bold; font-size: 0.9rem; margin-bottom: -10px; color: var(--verde-bosque); }
 
@@ -427,7 +428,13 @@
                     <option value="Plantas">Plantas y Jardinería</option>
                 </select>
                 <label>Descripción de tus productos</label><textarea id="ent-productos" rows="3" required></textarea>
-                <label>Perfil de Instagram</label><input type="text" id="ent-ig">
+                
+                <label>Perfil de Instagram (URL)</label>
+                <input type="url" id="ent-ig" placeholder="Ej: https://www.instagram.com/leomessi/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram. Ej: https://www.instagram.com/tuusuario/">
+                
+                <label>Perfil de Facebook (URL)</label>
+                <input type="url" id="ent-fb" placeholder="Ej: https://web.facebook.com/leomessi?locale=es_LA" pattern="https?://.*facebook\.com/.*" title="Debe ser un link válido de Facebook. Ej: https://www.facebook.com/tupagina/">
+
                 <button type="submit" class="btn-primario mt-2">Guardar y Descubrir Ferias</button>
             </form>
         </section>
@@ -483,8 +490,13 @@
                     </select>
                     <label>Descripción de tus productos</label>
                     <textarea id="edit-ent-productos" rows="3" required></textarea>
-                    <label>Perfil de Instagram</label>
-                    <input type="text" id="edit-ent-ig">
+                    
+                    <label>Perfil de Instagram (URL)</label>
+                    <input type="url" id="edit-ent-ig" placeholder="Ej: https://www.instagram.com/leomessi/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram">
+                    
+                    <label>Perfil de Facebook (URL)</label>
+                    <input type="url" id="edit-ent-fb" placeholder="Ej: https://web.facebook.com/leomessi?locale=es_LA" pattern="https?://.*facebook\.com/.*" title="Debe ser un link válido de Facebook">
+
                     <button type="submit" class="btn-primario mt-2">Guardar Cambios</button>
                 </form>
             </div>
@@ -604,13 +616,13 @@
         const MOCK_DATA = {
             usuarios: [
                 { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', dni: '11111111', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30-1111-2', socials: '@meridiano.feria', avatar: '' }, entData: null },
-                { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', dni: '22222222', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', productos: 'Pastelería artesanal, alfajores.', ig: '@santi.dulces', avatar: '' } },
-                { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', dni: '33333333', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Ropa Vintage.', ig: '', avatar: '' } },
-                { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', dni: '44444444', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', productos: 'Cerámica.', ig: '', avatar: '' } },
+                { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', dni: '22222222', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', productos: 'Pastelería artesanal, alfajores.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: '' } },
+                { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', dni: '33333333', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: '' } },
+                { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', dni: '44444444', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', productos: 'Cerámica.', ig: '', fb: '', avatar: '' } },
                 // Usuarios extra para engrosar lista de pendientes
-                { id: 5, name: 'Valeria', email: 'val@test.com', password: '123', dni: '55555555', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Plantas', productos: 'Cactus y suculentas.', ig: '', avatar: '' } },
-                { id: 6, name: 'Tomás', email: 'tom@test.com', password: '123', dni: '66666666', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Accesorios', productos: 'Plata y acero.', ig: '', avatar: '' } },
-                { id: 7, name: 'Camila', email: 'cam@test.com', password: '123', dni: '77777777', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Buzos estampados.', ig: '', avatar: '' } }
+                { id: 5, name: 'Valeria', email: 'val@test.com', password: '123', dni: '55555555', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Plantas', productos: 'Cactus y suculentas.', ig: '', fb: '', avatar: '' } },
+                { id: 6, name: 'Tomás', email: 'tom@test.com', password: '123', dni: '66666666', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Accesorios', productos: 'Plata y acero.', ig: '', fb: '', avatar: '' } },
+                { id: 7, name: 'Camila', email: 'cam@test.com', password: '123', dni: '77777777', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Buzos estampados.', ig: '', fb: '', avatar: '' } }
             ],
             ferias: [
                 { id: 101, idOrg: 1, nombre: 'Feria de Diseño Plaza', fecha: '2026-06-20', horario: '14:00 a 20:00', ubicacion: 'Plaza Principal', requisitos: 'Llevar mesa.', rubros: 'Indumentaria, Diseño', desc: 'Gran feria de diseño independiente.', costo: 5000, cuposTotales: 50, cuposDisponibles: 12, estado: 'Aceptada', imagen: '' },
@@ -909,6 +921,13 @@
                     if (user.isOrgSetup) { app.seleccionarRol('organizador'); } 
                     else if (user.isEntSetup) { app.seleccionarRol('feriante'); } 
                     else { app.mostrarVista('view-role-selection'); }
+
+                    // --- Recuperar la feria compartida después de loguearse ---
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const feriaId = urlParams.get('feria');
+                    if (feriaId && (user.isOrgSetup || user.isEntSetup)) {
+                        setTimeout(() => { app.abrirDetalleFeria(parseInt(feriaId)); }, 300);
+                    }
                 } else { alert('Credenciales incorrectas'); }
             },
 
@@ -951,6 +970,9 @@
                 if(!u) return;
                 let html = '';
                 if(u.isEntSetup && u.entData) {
+                    let igHtml = u.entData.ig ? `<a href="${u.entData.ig}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.entData.ig}</a>` : 'No especificado';
+                    let fbHtml = u.entData.fb ? `<a href="${u.entData.fb}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.entData.fb}</a>` : 'No especificado';
+                    
                     html = `
                         <div class="text-center" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
                             <img src="${u.entData.avatar || 'https://via.placeholder.com/120?text=Foto'}" class="perfil-img-preview">
@@ -959,7 +981,8 @@
                             <div style="background: var(--arena-calido); width: 100%; padding: 15px; border-radius: var(--radio); text-align: left; margin-top: 10px;">
                                 <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-tag" style="color: var(--verde-bosque);"></i> Rubro:</strong> ${u.entData.rubro}</p>
                                 <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-box" style="color: var(--verde-bosque);"></i> Productos:</strong><br>${u.entData.productos}</p>
-                                <p><strong><i class="fa-brands fa-instagram" style="color: var(--verde-bosque);"></i> Instagram:</strong> ${u.entData.ig || 'No especificado'}</p>
+                                <p style="margin-bottom: 8px; word-break: break-all;"><strong><i class="fa-brands fa-instagram" style="color: var(--verde-bosque);"></i> Instagram:</strong> <br>${igHtml}</p>
+                                <p style="word-break: break-all;"><strong><i class="fa-brands fa-facebook" style="color: var(--verde-bosque);"></i> Facebook:</strong> <br>${fbHtml}</p>
                             </div>
                         </div>`;
                 } else if(u.isOrgSetup && u.orgData) {
@@ -985,13 +1008,35 @@
             guardarOnboardingOrg: (e) => {
                 e.preventDefault();
                 state.currentUser.orgData = { name: document.getElementById('org-nombre').value, cuit: document.getElementById('org-cuit').value, socials: document.getElementById('org-redes').value, avatar: '' };
-                state.currentUser.isOrgSetup = true; app.mostrarAlerta('Perfil Organizador configurado'); app.initOrgFlow();
+                state.currentUser.isOrgSetup = true; 
+                app.mostrarAlerta('Perfil Organizador configurado'); 
+                app.initOrgFlow();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const feriaId = urlParams.get('feria');
+                if (feriaId) {
+                    setTimeout(() => { app.abrirDetalleFeria(parseInt(feriaId)); }, 300);
+                }
             },
 
             guardarOnboardingEnt: (e) => {
                 e.preventDefault();
-                state.currentUser.entData = { rubro: document.getElementById('ent-rubro').value, productos: document.getElementById('ent-productos').value, ig: document.getElementById('ent-ig').value, avatar: '' };
-                state.currentUser.isEntSetup = true; app.mostrarAlerta('Perfil Feriante configurado'); app.initEntFlow();
+                state.currentUser.entData = { 
+                    rubro: document.getElementById('ent-rubro').value, 
+                    productos: document.getElementById('ent-productos').value, 
+                    ig: document.getElementById('ent-ig').value, 
+                    fb: document.getElementById('ent-fb').value, 
+                    avatar: '' 
+                };
+                state.currentUser.isEntSetup = true; 
+                app.mostrarAlerta('Perfil Feriante configurado'); 
+                app.initEntFlow();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const feriaId = urlParams.get('feria');
+                if (feriaId) {
+                    setTimeout(() => { app.abrirDetalleFeria(parseInt(feriaId)); }, 300);
+                }
             },
 
             cargarPerfilOrg: () => {
@@ -1011,14 +1056,23 @@
             cargarPerfilEnt: () => {
                 const data = state.currentUser.entData;
                 if(data) {
-                    document.getElementById('edit-ent-rubro').value = data.rubro || ''; document.getElementById('edit-ent-productos').value = data.productos || '';
-                    document.getElementById('edit-ent-ig').value = data.ig || ''; if(data.avatar) document.getElementById('img-preview-ent').src = data.avatar;
+                    document.getElementById('edit-ent-rubro').value = data.rubro || ''; 
+                    document.getElementById('edit-ent-productos').value = data.productos || '';
+                    document.getElementById('edit-ent-ig').value = data.ig || ''; 
+                    document.getElementById('edit-ent-fb').value = data.fb || ''; 
+                    if(data.avatar) document.getElementById('img-preview-ent').src = data.avatar;
                 }
             },
 
             guardarPerfilEnt: (e) => {
                 e.preventDefault();
-                state.currentUser.entData = { rubro: document.getElementById('edit-ent-rubro').value, productos: document.getElementById('edit-ent-productos').value, ig: document.getElementById('edit-ent-ig').value, avatar: document.getElementById('img-preview-ent').src };
+                state.currentUser.entData = { 
+                    rubro: document.getElementById('edit-ent-rubro').value, 
+                    productos: document.getElementById('edit-ent-productos').value, 
+                    ig: document.getElementById('edit-ent-ig').value, 
+                    fb: document.getElementById('edit-ent-fb').value, 
+                    avatar: document.getElementById('img-preview-ent').src 
+                };
                 app.mostrarAlerta('Perfil de emprendedor actualizado');
             },
 
