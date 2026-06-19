@@ -163,7 +163,44 @@
         .mb-2 { margin-bottom: 20px; }
         .alerta { padding: 15px; border-radius: var(--radio); margin-bottom: 20px; text-align: center; font-weight: bold; }
         .alerta-exito { background-color: var(--verde-menta); color: var(--verde-bosque); }
+        /* === UTILIDADES EXTRAS === */
+        /* 1. Ocultar flechitas de los inputs tipo número (DNI) */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
 
+        /* 2. Estructura para el campo de contraseña con el ícono de Ver/Ocultar */
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .password-container input {
+            width: 100%;
+            padding-right: 40px; /* Deja espacio para que el texto no pise al ícono */
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--verde-bosque);
+            cursor: pointer;
+            padding: 5px;
+        }
+        .toggle-password:hover {
+            color: var(--verde-menta);
+            transform: none; /* Evita que el ícono salte al hacer hover */
+        }
+
+         
         /* === MEJORAS PARA CELULARES (RESPONSIVE) === */
         @media (max-width: 768px) {
             /* General y contenedores */
@@ -247,6 +284,7 @@
                 padding: 10px; 
                 font-size: 0.85rem; /* Achica un poco la letra de las tablas para que entre más info */
             }
+            
         }
     </style>
 </head>
@@ -310,12 +348,25 @@
                 <h2 class="text-center">Crear Cuenta</h2>
                 <label>Nombre Completo</label>
                 <input type="text" id="reg-nombre" required>
+                
                 <label>Email</label>
                 <input type="email" id="reg-email" required>
+                
                 <label>DNI</label>
                 <input type="number" id="reg-dni" required>
+                
                 <label>Contraseña</label>
-                <input type="password" id="reg-pass" required>
+                <div class="password-container">
+                    <input type="password" id="reg-pass" required minlength="8" title="Debe contener al menos 8 caracteres">
+                    <button type="button" class="toggle-password" onclick="app.togglePasswordVisibilidad('reg-pass', this)"><i class="fa-solid fa-eye"></i></button>
+                </div>
+
+                <label>Repetir Contraseña</label>
+                <div class="password-container">
+                    <input type="password" id="reg-pass-confirm" required minlength="8">
+                    <button type="button" class="toggle-password" onclick="app.togglePasswordVisibilidad('reg-pass-confirm', this)"><i class="fa-solid fa-eye"></i></button>
+                </div>
+
                 <button type="submit" class="btn-primario mt-2">Registrarse</button>
             </form>
         </section>
@@ -375,8 +426,8 @@
                     </div>
                     <label>Nombre de la Organización/Feria</label>
                     <input type="text" id="edit-org-nombre" required>
-                    <label>CUIT</label>
-                    <input type="text" id="edit-org-cuit" required>
+                    <label>CUIT (Solo números)</label>
+                    <input type="text" id="edit-org-cuit" required minlength="11" maxlength="11" pattern="\d{11}" title="Debe contener exactamente 11 números, sin guiones." oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     <label>Perfil de Instagram (URL)</label>
                     <input type="url" id="edit-org-ig" placeholder="Ej: https://www.instagram.com/tuferia/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram">
                     <label>Perfil de Facebook (URL)</label>
@@ -495,7 +546,8 @@
                 <h2 class="text-center">Perfil de Organizador</h2>
                 <p class="text-center mb-2">Configurá los datos iniciales de tu organización</p>
                 <label>Nombre de la Organización</label><input type="text" id="org-nombre" required>
-                <label>CUIT</label><input type="text" id="org-cuit" required>
+                <label>CUIT (Solo números)</label>
+                <input type="text" id="org-cuit" required minlength="11" maxlength="11" pattern="\d{11}" title="Debe contener exactamente 11 números, sin guiones." oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 <label>Perfil de Instagram (URL)</label>
                 <input type="url" id="org-ig" placeholder="Ej: https://www.instagram.com/tuferia/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram">
                 <label>Perfil de Facebook (URL)</label>
@@ -509,14 +561,20 @@
                 <h2 class="text-center">Perfil de Emprendedor</h2>
                 <p class="text-center mb-2">Completa tu vitrina virtual</p>
                 <label>Rubro Principal</label>
-                <select id="ent-rubro" required>
-                    <option value="">Selecciona un rubro...</option>
-                    <option value="Indumentaria">Indumentaria y Textil</option>
-                    <option value="Gastronomia">Gastronomía</option>
-                    <option value="Artesanias">Artesanías y Decoración</option>
-                    <option value="Accesorios">Accesorios y Joyería</option>
-                    <option value="Plantas">Plantas y Jardinería</option>
-                </select>
+                <select id="tu-id-aca" required>
+                        <option value="">Selecciona un rubro...</option>
+                        <option value="Indumentaria">Indumentaria y Textil</option>
+                        <option value="Gastronomia">Gastronomía</option>
+                        <option value="Artesanias">Artesanías y Decoración</option>
+                        <option value="Accesorios">Accesorios y Joyería</option>
+                        <option value="Plantas">Plantas y Jardinería</option>
+                        <option value="Cosmetica">Cosmética Natural</option>
+                        <option value="Marroquineria">Marroquinería y Calzado</option>
+                        <option value="Papeleria">Papelería y Encuadernación</option>
+                        <option value="Juguetes">Juguetes infantiles</option>
+                        <option value="Arte">Arte, Ilustración y Diseño</option>
+                        <option value="Otro">Otro</option>
+                    </select>
                 <label>Descripción de tus productos</label><textarea id="ent-productos" rows="3" required></textarea>
                 
                 <label>Perfil de Instagram (URL)</label>
@@ -570,13 +628,19 @@
                         <input type="file" id="upload-ent" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-ent')">
                     </div>
                     <label>Rubro Principal</label>
-                    <select id="edit-ent-rubro" required>
+                    <select id="tu-id-aca" required>
                         <option value="">Selecciona un rubro...</option>
                         <option value="Indumentaria">Indumentaria y Textil</option>
                         <option value="Gastronomia">Gastronomía</option>
                         <option value="Artesanias">Artesanías y Decoración</option>
                         <option value="Accesorios">Accesorios y Joyería</option>
                         <option value="Plantas">Plantas y Jardinería</option>
+                        <option value="Cosmetica">Cosmética Natural</option>
+                        <option value="Marroquineria">Marroquinería y Calzado</option>
+                        <option value="Papeleria">Papelería y Encuadernación</option>
+                        <option value="Juguetes">Juguetes infantiles</option>
+                        <option value="Arte">Arte, Ilustración y Diseño</option>
+                        <option value="Otro">Otro</option>
                     </select>
                     <label>Descripción de tus productos</label>
                     <textarea id="edit-ent-productos" rows="3" required></textarea>
@@ -1019,14 +1083,42 @@
 
             registro: (e) => {
                 e.preventDefault();
+                
+                const pass = document.getElementById('reg-pass').value;
+                const passConfirm = document.getElementById('reg-pass-confirm').value;
+
+                if (pass !== passConfirm) {
+                    alert('Las contraseñas no coinciden. Por favor, intentalo de nuevo.');
+                    return; // Frena la ejecución, no crea la cuenta
+                }
+
                 const nuevoUser = {
                     id: Date.now(), name: document.getElementById('reg-nombre').value, email: document.getElementById('reg-email').value, 
-                    dni: document.getElementById('reg-dni').value, password: document.getElementById('reg-pass').value, 
+                    dni: document.getElementById('reg-dni').value, password: pass, 
                     isOrgSetup: false, isEntSetup: false, orgData: null, entData: null
                 };
                 state.usuarios.push(nuevoUser); state.currentUser = nuevoUser;
                 app.actualizarHeader(); app.mostrarAlerta('Cuenta creada exitosamente');
+                
+                // Limpia el formulario
+                document.getElementById('form-registro').reset();
                 app.mostrarVista('view-role-selection');
+            },
+
+            // --- NUEVA FUNCIÓN: VISIBILIDAD DE CONTRASEÑA ---
+            togglePasswordVisibilidad: (inputId, botonElemento) => {
+                const input = document.getElementById(inputId);
+                const icono = botonElemento.querySelector('i');
+                
+                if (input.type === "password") {
+                    input.type = "text";
+                    icono.classList.remove('fa-eye');
+                    icono.classList.add('fa-eye-slash'); // Ojito tachado
+                } else {
+                    input.type = "password";
+                    icono.classList.remove('fa-eye-slash');
+                    icono.classList.add('fa-eye'); // Ojito normal
+                }
             },
 
             logout: () => {
