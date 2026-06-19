@@ -163,6 +163,91 @@
         .mb-2 { margin-bottom: 20px; }
         .alerta { padding: 15px; border-radius: var(--radio); margin-bottom: 20px; text-align: center; font-weight: bold; }
         .alerta-exito { background-color: var(--verde-menta); color: var(--verde-bosque); }
+
+        /* === MEJORAS PARA CELULARES (RESPONSIVE) === */
+        @media (max-width: 768px) {
+            /* General y contenedores */
+            main { padding: 20px 10px; }
+            
+            /* Tarjetas y Estadísticas a 1 columna */
+            .grid-cards { grid-template-columns: 1fr; } 
+            .stat-box { min-width: 100%; }
+            .rol-card { width: 100%; max-width: 320px; padding: 25px; }
+            
+            /* Formularios */
+            form { padding: 20px; width: 100%; }
+            #form-editar-feria { grid-template-columns: 1fr !important; }
+            
+            /* Header y Navegación */
+            .logo { font-size: 1.2rem; }
+            .btn-chico { padding: 5px 10px; font-size: 0.8rem; }
+            #user-greeting { display: none; } /* Ocultamos el saludo ("Hola, Nombre") para ahorrar espacio */
+            
+            /* Pestañas (Tabs) scrolleables horizontalmente */
+            .tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+            .tabs::-webkit-scrollbar { height: 4px; }
+            .tabs::-webkit-scrollbar-thumb { background-color: var(--verde-menta); border-radius: 4px; }
+            .tab-btn { flex: 0 0 auto; white-space: nowrap; }
+            
+            /* Modales y Popups adaptados a la pantalla completa */
+            #modal-detalle-feria > div,
+            #modal-perfil-usuario > div,
+            #modal-postulacion > div,
+            #modal-baja-feriante > div,
+            #modal-adjuntos > div,
+            #modal-reporte > div {
+                padding: 20px !important;
+                margin: 10px;
+                max-height: 85vh;
+            }
+            
+            /* Chatbot para que no se salga de la pantalla */
+            .chatbot-modal { width: calc(100vw - 40px); right: 20px; bottom: 100px; min-width: unset; }
+            .chatbot-modal.ampliado { width: calc(100vw - 20px) !important; right: 10px !important; height: 85vh !important; }
+            /* --- AJUSTES ESPECÍFICOS PARA CELULAR --- */
+            
+            /* 1. Detalles de la feria (Pasar a 1 columna y ajustar la foto) */
+            #detalle-feria-content div[style*="grid-template-columns"] { 
+                grid-template-columns: 1fr !important; 
+                gap: 10px !important; 
+            }
+            #detalle-feria-content img { 
+                width: calc(100% + 40px) !important; 
+                margin: -20px -20px 15px -20px !important; 
+                height: 150px !important; 
+            }
+            
+            /* 2. Formularios: Apilar inputs que están lado a lado (Fechas, Horas, Cupos) */
+            form div[style*="gap: 10px"] { 
+                flex-direction: column; 
+                align-items: stretch !important;
+                gap: 15px !important; 
+            }
+            form div[style*="gap: 10px"] > div { 
+                width: 100%; 
+            }
+            
+            /* 3. Encabezados de vistas: Apilar título y botón */
+            .view-header { 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 15px;
+            }
+            .view-header button { 
+                width: 100%; 
+            }
+            
+            /* 4. Menú de Notificaciones y Tablas */
+            .notif-dropdown { 
+                right: -50px; /* Lo empuja un poquito a la izquierda para centrarlo */
+                width: calc(100vw - 20px); 
+                max-width: 320px; 
+            }
+            th, td { 
+                padding: 10px; 
+                font-size: 0.85rem; /* Achica un poco la letra de las tablas para que entre más info */
+            }
+        }
     </style>
 </head>
 <body>
