@@ -1616,8 +1616,76 @@
                 const containerFeriantes = document.getElementById('gestion-feriantes-aceptados');
                 const aceptados = state.reservas.filter(r => r.idFeria === f.id && ['a pagar', 'reservada', 'pago total realizado', '¡nos vemos en la feria!'].includes(r.estado.toLowerCase()));
                 
-                let htmlAceptados = `<div class="table-responsive"><table><thead><tr><th>Emprendedor</th><th>Rubro</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
-                
+// --- INICIO NUEVO DASHBOARD FINANCIERO DE ACEPTADOS ---
+                const comisionPorStand = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
+                const standNeto = f.costo - comisionPorStand; // Lo que le queda al Org por cada stand
+                const pctRes = f.porcentajeReserva || 30;
+
+                let dineroEspera = 0;
+                let dineroRetenido = 0;
+                let dineroCobrado = 0;
+                const totalComisionFeriarg = aceptados.length * comisionPorStand;
+
+                const esFeriaRealizada = ['realizada'].includes((f.estado || '').toLowerCase());
+
+                aceptados.forEach(r => {
+                    const est = r.estado.toLowerCase();
+
+                    if (est === 'a pagar') {
+                        // Está aceptado pero no puso un peso -> Debe el 100% del stand neto
+                        dineroEspera += standNeto;
+
+                    } else if (est === 'reservada') {
+                        // Pagó la reserva (FeriArg la retiene), debe el resto neto
+                        const netoReserva = Math.round((standNeto * pctRes) / 100);
+                        const netoRestante = standNeto - netoReserva;
+                        
+                        dineroEspera += netoRestante;
+                        
+                        if (esFeriaRealizada) {
+                            dineroCobrado += netoReserva;
+                        } else {
+                            dineroRetenido += netoReserva;
+                        }
+
+                    } else if (est === 'pago total realizado' || est === '¡nos vemos en la feria!') {
+                        // Pagó el 100% del stand neto
+                        if (esFeriaRealizada) {
+                            dineroCobrado += standNeto;
+                        } else {
+                            dineroRetenido += standNeto;
+                        }
+                    }
+                });
+
+                let htmlAceptados = `
+                    <div class="stats-container" style="margin-bottom: 15px;">
+                        <div class="stat-box" style="border-left-color: #ffd966; padding: 10px 15px;">
+                            <h3 style="font-size: 1.5rem;">$${dineroEspera.toLocaleString('es-AR')}</h3>
+                            <p style="font-size: 0.8rem;">A la espera de cobro</p>
+                        </div>
+                        <div class="stat-box" style="border-left-color: #17a2b8; padding: 10px 15px;">
+                            <h3 style="font-size: 1.5rem;">$${dineroRetenido.toLocaleString('es-AR')}</h3>
+                            <p style="font-size: 0.8rem;">Retenido por FeriArg</p>
+                        </div>
+                        <div class="stat-box" style="border-left-color: var(--verde-bosque); padding: 10px 15px;">
+                            <h3 style="font-size: 1.5rem;">$${dineroCobrado.toLocaleString('es-AR')}</h3>
+                            <p style="font-size: 0.8rem;">Ya cobrado</p>
+                        </div>
+                    </div>
+
+                    <div style="background-color: #eef7f4; border: 1px solid var(--verde-menta); padding: 10px; border-radius: var(--radio); margin-bottom: 20px; text-align: center; font-size: 0.9rem; color: var(--carbon);">
+                        FeriARG se lleva ${COMISION_PLATAFORMA_PORCENTAJE}% de comisión por cargo de servicio: <strong>$${totalComisionFeriarg.toLocaleString('es-AR')}</strong>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Emprendedor</th><th>Rubro</th><th>Estado</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody>
+                `;
+                // --- FIN NUEVO DASHBOARD FINANCIERO ---                
                 if(aceptados.length === 0) {
                     htmlAceptados += `<tr><td colspan="4" class="text-center">Aún no hay feriantes aceptados en esta feria.</td></tr>`;
                 } else {
@@ -2006,8 +2074,7 @@
                 if(!f) return;
                 
                 const yaPostulado = state.currentUser ? state.reservas.find(r => r.idFeria === f.id && r.idEnt === state.currentUser.id) : false;
-                const esFeriaTerminada = ['realizada', 'cancelada'].includes(f.estado.toLowerCase());
-
+                const esFeriaTerminada = ['realizada', 'cancelada'].includes((f.estado || '').toLowerCase()); 
                 let containerModal = document.getElementById('detalle-feria-content');
                 
                 if (esFeriaTerminada) {
@@ -2067,12 +2134,23 @@
 
                 const org = state.usuarios.find(u => u.id === f.idOrg) || { orgData: { name: 'Organizador' }, id: f.idOrg };
                 const imgSrc = f.imagen || `https://via.placeholder.com/800x300/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
-
+                
                 let requisitosVisualHtml = '';
                 if (f.requisitosTipo === 'archivo') {
                     requisitosVisualHtml = `<a href="${f.requisitos}" target="_blank" class="btn-outline btn-chico" style="display:inline-block; text-decoration:none;"><i class="fa-solid fa-file-pdf"></i> Ver Reglamento/Requisitos Oficial (PDF)</a>`;
                 } else {
                     requisitosVisualHtml = `<p>${f.requisitos || '-'}</p>`;
+                }
+
+                // Generamos el texto de la comisión SOLO si el rol activo es organizador
+                let comisionHtml = '';
+                if (state.currentRole === 'organizador') {
+                    comisionHtml = `
+                        <div style="font-size: 0.85rem; color: #444; text-align: center; margin-top: 10px; border-top: 1px dashed var(--verde-menta); padding-top: 8px;">
+                            FeriARG se lleva ${COMISION_PLATAFORMA_PORCENTAJE}% de comisión por cargo de servicio: <strong>$${montoComision}</strong>.<br>
+                            <span style="font-size: 0.75rem; color: #666;">(Por el momento la comisión es del 0% para todas las transacciones)</span>
+                        </div>
+                    `;
                 }
 
                 const desgloseEconomico = `
@@ -2081,14 +2159,11 @@
                             <span style="color: var(--carbon); font-weight: bold;">Valor Total del Stand:</span>
                             <span style="color: var(--verde-bosque); font-weight: bold; font-size: 1.1rem;">$${f.costo}</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 8px;">
-                            <span style="color: #555;">Valor de la Reserva acordada (${pctReserva}%):</span>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #555;">
+                            <span>Valor de la Reserva acordada (${pctReserva}%):</span>
                             <span style="color: var(--rojo-tomate); font-weight: bold;">$${valorReserva}</span>
                         </div>
-                        <div style="font-size: 0.85rem; color: #444; text-align: center;">
-                            FeriARG se lleva ${COMISION_PLATAFORMA_PORCENTAJE}% de comisión por cargo de servicio: <strong>$${montoComision}</strong>.<br>
-                            <span style="font-size: 0.75rem; color: #666;">(Por el momento la comisión es del 0% para todas las transacciones)</span>
-                        </div>
+                        ${comisionHtml}
                     </div>
                 `;
 
