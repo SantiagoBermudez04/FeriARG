@@ -387,7 +387,7 @@
                         <input type="file" id="upload-org" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-org')">
                     </div>
                     <label>Nombre de la Organización/Feria</label>
-                    <input type="text" id="edit-org-nombre" required>
+                    <input type="text" id="edit-org-nombre" maxlength="50" required>
                     <label>CUIT (Solo números)</label>
                     <input type="text" id="edit-org-cuit" required minlength="11" maxlength="11" pattern="\d{11}" title="Debe contener exactamente 11 números, sin guiones." oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     <label>Perfil de Instagram (URL)</label>
@@ -433,7 +433,7 @@
                         <input type="file" id="upload-edit-feria" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-edit-feria')">
                     </div>
 
-<div style="grid-column: 1 / -1; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="grid-column: 1 / -1; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
                             <label>Nombre del Evento (Solo lectura)</label>
                             <input type="text" id="ed-nombre" readonly style="background: var(--arena-calido); border-radius: var(--radio); width: 100%;">
@@ -451,15 +451,14 @@
                     </div>
                     <div><label>Fecha</label><input type="date" id="ed-fecha" required></div>
                     <div><label>Horario</label><input type="text" id="ed-horario" required></div>
-                    <div style="grid-column: 1 / -1;"><label>Ubicación</label><input type="text" id="ed-ubicacion" required></div>
+                    <div style="grid-column: 1 / -1;"><label>Ubicación</label><input type="text" id="ed-ubicacion" maxlength="80" required></div>
                     <div>
                         <label>Cupos Totales</label><input type="number" id="ed-cupos" min="1" required>
                         <small id="ed-cupos-help" style="color: var(--rojo-tomate); font-weight: bold;"></small>
                     </div>
                     <div>
-                        <label>Visibilidad / Privacidad</label>
-                    </div>
-                    <div style="grid-column: 1 / -1;"><label>Descripción General</label><textarea id="ed-desc" rows="3" required></textarea></div>
+                        </div>
+                    <div style="grid-column: 1 / -1;"><label>Descripción General</label><textarea id="ed-desc" rows="3" maxlength="500" required></textarea></div>
                     <div style="grid-column: 1 / -1; text-align: right; display:flex; justify-content:space-between; align-items:center;">
                         <button type="button" id="btn-cancelar-feria" class="btn-outline" style="color: var(--rojo-tomate); border-color: var(--rojo-tomate);" onclick="app.promptCancelarFeria()"><i class="fa-solid fa-ban"></i> Cancelar Feria</button>
                         <button type="submit" id="btn-guardar-edicion" class="btn-primario">Guardar Cambios</button>
@@ -491,7 +490,7 @@
                     <img id="img-preview-nueva-feria" class="card-img" style="border-radius: var(--radio); margin-bottom: 10px; width: 100%; height: 150px; object-fit: cover;" src="https://via.placeholder.com/400x200/A7D7C5/1E5631?text=Subir+Foto">
                     <input type="file" id="upload-nueva-feria" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-nueva-feria')">
                 </div>
-                <label>Nombre del Evento</label><input type="text" id="nf-nombre" required>
+                <label>Nombre del Evento</label><input type="text" id="nf-nombre" maxlength="50" required>
                 
                 <div style="display: flex; gap: 10px; align-items: flex-end;">
                     <div style="flex: 1;"><label>Fecha de la Feria</label><input type="date" id="nf-fecha" required></div>
@@ -512,22 +511,35 @@
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label>Ubicación</label><input type="text" id="nf-ubicacion" required></div>
-                    <div style="flex: 1;">
-                        <label>Privacidad inicial</label>
-                        <select id="nf-privacidad" required>
-                            <option value="publica" selected>Pública (Abierta a todo público)</option>
-                            <option value="privada">Privada (Solo con link directo)</option>
-                        </select>
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex: 1;"><label>Ubicación</label><input type="text" id="nf-ubicacion" maxlength="80" required></div>
+                    <div class="switch-contenedor" style="margin-bottom: 0;">
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1;">
+                            <span style="font-size: 0.7rem; color: #666; font-weight: bold;">PRIVACIDAD INICIAL</span>
+                            <span id="label-priv-nf-texto" style="font-weight: bold; font-size: 0.85rem; color: var(--verde-bosque);">PÚBLICA</span>
+                        </div>
+                        <label class="switch-toggle" title="Click para cambiar">
+                            <input type="checkbox" id="nf-privacidad-chk" checked onchange="app.cambiarLabelPrivacidadNF(this)">
+                            <span class="slider-toggle"></span>
+                        </label>
                     </div>
                 </div>
                 
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label>Costo Total del Stand ($ ARS)</label>
+                        <input type="number" id="nf-costo" min="0" required oninput="app.actualizarTextoComisionNF()">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Porcentaje de Reserva (%)</label>
+                        <input type="number" id="nf-porcentaje-reserva" min="1" max="100" value="30" required>
+                    </div>
+                </div>
+                    <small id="nf-texto-comision" style="color: #666; font-weight: bold; margin-top: -5px; display: block;">FeriARG se lleva 0% de comisión por cargo de servicio: $0</small>
                 <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label>Costo del Stand ($ ARS)</label><input type="number" id="nf-costo" min="0" required></div>
                     <div style="flex: 1;"><label>Cupos Totales</label><input type="number" id="nf-cupos" min="1" required></div>
                 </div>
-                <label>Rubros Permitidos</label><input type="text" id="nf-rubros" required placeholder="Ej: Indumentaria, Gastronomía, Todos...">
+                <label>Rubros Permitidos</label><input type="text" id="nf-rubros" maxlength="100" required placeholder="Ej: Indumentaria, Gastronomía, Todos...">
                 
                 <label>Formato de Requisitos/Reglamento</label>
                 <select id="nf-tipo-requisitos" onchange="app.alternarInputRequisitos(this.value)">
@@ -537,14 +549,14 @@
 
                 <div id="container-requisitos-texto">
                     <label>Escribir Requisitos</label>
-                    <textarea id="nf-requisitos" rows="2" placeholder="Ej: Llevar mantel blanco, traer gazebo..."></textarea>
+                    <textarea id="nf-requisitos" rows="2" maxlength="300" placeholder="Ej: Llevar mantel blanco, traer gazebo..."></textarea>
                 </div>
                 <div id="container-requisitos-archivo" class="oculto">
                     <label>Adjuntar Reglamento (PDF)</label>
                     <input type="file" id="nf-requisitos-pdf" accept="application/pdf" class="input-file-small">
                 </div>
 
-                <label>Descripción General</label><textarea id="nf-desc" rows="3" required></textarea>
+                <label>Descripción General</label><textarea id="nf-desc" rows="3" maxlength="500" required></textarea>
                 <button type="submit" class="btn-primario mt-2">Publicar Feria</button>
             </form>
         </section>
@@ -553,7 +565,7 @@
             <form onsubmit="app.guardarOnboardingOrg(event)">
                 <h2 class="text-center">Perfil de Organizador</h2>
                 <p class="text-center mb-2">Configurá los datos iniciales de tu organización</p>
-                <label>Nombre de la Organización</label><input type="text" id="org-nombre" required>
+                <label>Nombre de la Organización</label><input type="text" id="org-nombre" maxlength="50" required>
                 <label>CUIT (Solo números)</label>
                 <input type="text" id="org-cuit" required minlength="11" maxlength="11" pattern="\d{11}" title="Debe contener exactamente 11 números, sin guiones." oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 <label>Perfil de Instagram (URL)</label>
@@ -569,7 +581,7 @@
                 <h2 class="text-center">Perfil de Emprendedor</h2>
                 <p class="text-center mb-2">Completa tu vitrina virtual</p>
                 <label>Rubro Principal</label>
-                <select id="ent-rubro" required>
+                <select id="ent-rubro" required onchange="app.evaluarRubroOtro(this, 'ent-rubro-otro')">
                     <option value="">Selecciona un rubro...</option>
                     <option value="Indumentaria">Indumentaria y Textil</option>
                     <option value="Gastronomia">Gastronomía</option>
@@ -583,7 +595,12 @@
                     <option value="Arte">Arte, Ilustración y Diseño</option>
                     <option value="Otro">Otro</option>
                 </select>
-                <label>Descripción de tus productos</label><textarea id="ent-productos" rows="3" required></textarea>
+                <input type="text" id="ent-rubro-otro" class="oculto" maxlength="40" placeholder="Especificá tu rubro manualmente...">
+
+                <label>¿Quién soy? (Breve presentación para organizadores)</label>
+                <textarea id="ent-bio" rows="2" maxlength="250" placeholder="Ej: Soy Santiago, estudiante de Administración en la UNLP y pastelero aficionado..."></textarea>
+
+                 <label>Descripción de tus productos</label><textarea id="ent-productos" rows="3" maxlength="300"></textarea>
                 
                 <label>Perfil de Instagram (URL)</label>
                 <input type="url" id="ent-ig" placeholder="Ej: https://www.instagram.com/leomessi/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram.">
@@ -670,7 +687,7 @@
                     </div>
 
                     <label>Rubro Principal</label>
-                    <select id="edit-ent-rubro" required>
+                    <select id="edit-ent-rubro" required onchange="app.evaluarRubroOtro(this, 'edit-ent-rubro-otro')">
                         <option value="">Selecciona un rubro...</option>
                         <option value="Indumentaria">Indumentaria y Textil</option>
                         <option value="Gastronomia">Gastronomía</option>
@@ -684,8 +701,13 @@
                         <option value="Arte">Arte, Ilustración y Diseño</option>
                         <option value="Otro">Otro</option>
                     </select>
+                    <input type="text" id="edit-ent-rubro-otro" class="oculto mt-2" maxlength="40" placeholder="Especificá tu rubro manualmente...">
+
+                    <label>¿Quién soy?</label>
+                    <textarea id="edit-ent-bio" rows="2" maxlength="250"></textarea>
+
                     <label>Descripción de tus productos</label>
-                    <textarea id="edit-ent-productos" rows="3" required></textarea>
+                    <textarea id="edit-ent-productos" rows="3" maxlength="300"></textarea>
                     
                     <label>Perfil de Instagram (URL)</label>
                     <input type="url" id="edit-ent-ig" placeholder="Ej: https://www.instagram.com/leomessi/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram">
@@ -725,6 +747,14 @@
                     <input type="file" id="post-video" class="input-file-small" accept="video/*">
                     <label>C) Carnet manipulación alimentos / Libreta</label>
                     <input type="file" id="post-carnet" class="input-file-small" accept="image/*, application/pdf">
+                    
+                    <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 15px; background: #f0f9f5; padding: 12px; border-radius: var(--radio); border: 1px solid var(--verde-menta);">
+                        <input type="checkbox" id="post-acepto-reg" required style="margin-top: 4px; width: auto;">
+                        <label for="post-acepto-reg" style="margin-bottom: 0; font-size: 0.85rem; color: var(--carbon); font-weight: normal;">
+                            Acepto los requisitos y el reglamento estipulados por el organizador para esta feria. *
+                        </label>
+                    </div>
+
                     <button type="submit" class="btn-primario mt-2" style="width: 100%;">Confirmar Postulación</button>
                 </form>
             </div>
@@ -734,11 +764,19 @@
             <div style="background: var(--blanco); border-radius: var(--radio); max-width: 400px; width: 100%; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px;">
                 <button onclick="app.cerrarModalBajaFeriante()" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--carbon); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
                 <h3 style="color: var(--rojo-tomate); margin-bottom: 10px;"><i class="fa-solid fa-user-minus"></i> Dar de baja Feriante</h3>
-                <p style="font-size: 0.9rem; color: gray; margin-bottom: 20px;">Ya sea por una decisión administrativa, ingresá el motivo por el cual estás eliminando a este emprendedor de la feria.</p>
+                <p style="font-size: 0.9rem; color: gray; margin-bottom: 20px;">Ingresá el motivo por el cual estás eliminando a este emprendedor de la feria.</p>
                 <form onsubmit="app.confirmarBajaFeriante(event)" style="box-shadow: none; padding: 0;">
                     <input type="hidden" id="baja-reserva-id">
                     <label>Motivo de la baja</label>
                     <textarea id="baja-motivo-texto" rows="3" required placeholder="Ej: No realizó el pago a tiempo, incumplimiento de normas..."></textarea>
+                    
+                    <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 15px; background: #fff3f3; padding: 12px; border-radius: var(--radio); border: 1px solid #ffb3b3;">
+                        <input type="checkbox" id="baja-devolucion-chk" required style="margin-top: 4px; width: auto;">
+                        <label for="baja-devolucion-chk" style="margin-bottom: 0; font-size: 0.85rem; color: #a60000; font-weight: normal;">
+                            Estoy de acuerdo con efectuar la devolución del dinero al feriante *
+                        </label>
+                    </div>
+
                     <button type="submit" class="btn-primario mt-2" style="width: 100%; background-color: var(--rojo-tomate);">Confirmar Baja</button>
                 </form>
             </div>
@@ -814,33 +852,35 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE FECHAS GLOBALES PARA INPUTS
+        // CONFIGURACIÓN GLOBAL
+        const COMISION_PLATAFORMA_PORCENTAJE = 0; // 0% solicitado por el momento
+
         const fechaActual = new Date().toISOString().split('T')[0];
         document.getElementById('nf-fecha').min = fechaActual;
         document.getElementById('ed-fecha').min = fechaActual;
         document.getElementById('nf-pago-hasta').min = fechaActual;
 
-        // --- 1. MOCK DATA AMPLIADA ---
+        // --- MOCK DATA AMPLIADA ---
         const MOCK_DATA = {
             usuarios: [
                 { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30111111112', ig: 'https://www.instagram.com/meridiano.feria/', fb: '', avatar: './img/feriarg.png' }, entData: null },
-                { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', productos: 'Pastelería artesanal, alfajores.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: './img/santiago.png', galeria: ['./img/mercado-productores.png', './img/feria-verano-pasada.png'] } },
-                { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: './img/lucia.png', galeria: [] } },
-                { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', productos: 'Cerámica.', ig: '', fb: '', avatar: './img/marcos.png', galeria: [] } },
-                { id: 5, name: 'Valeria', email: 'val@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Plantas', productos: 'Cactus y suculentas.', ig: '', fb: '', avatar: './img/valeria.png', galeria: ['./img/expo-primaveral-meridiano.png', './img/feria-libro-y-arte.png'] } },
-                { id: 6, name: 'Tomás', email: 'tom@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Accesorios', productos: 'Plata y acero.', ig: '', fb: '', avatar: './img/tomas.png', galeria: [] } },
-                { id: 7, name: 'Camila', email: 'cam@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', productos: 'Buzos estampados.', ig: '', fb: '', avatar: './img/camila.png', galeria: [] } }
+                { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', bio: 'Estudiante de Administración en la UNLP apasionado por la pastelería. Empecé haciendo budines para mis compañeros de cursada y hoy busco llevar mis sabores a todas las ferias de la región.', productos: 'Pastelería artesanal, alfajores de almendra, budines y cookies.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: './img/santiago.png', galeria: ['./img/mercado-productores.png', './img/feria-verano-pasada.png'] } },
+                { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', bio: 'Diseñadora textil independiente.', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: './img/lucia.png', galeria: [] } },
+                { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', bio: 'Artesano del barro y la cerámica.', productos: 'Cerámica.', ig: '', fb: '', avatar: './img/marcos.png', galeria: [] } },
+                { id: 5, name: 'Valeria', email: 'val@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Plantas', bio: 'Amante de la botánica y el diseño vivo.', productos: 'Cactus y suculentas.', ig: '', fb: '', avatar: './img/valeria.png', galeria: ['./img/expo-primaveral-meridiano.png', './img/feria-libro-y-arte.png'] } },
+                { id: 6, name: 'Tomás', email: 'tom@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Accesorios', bio: 'Orfebre platense.', productos: 'Plata y acero.', ig: '', fb: '', avatar: './img/tomas.png', galeria: [] } },
+                { id: 7, name: 'Camila', email: 'cam@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', bio: 'Taller de serigrafía propio.', productos: 'Buzos estampados.', ig: '', fb: '', avatar: './img/camila.png', galeria: [] } }
             ],
             ferias: [
-                { id: 101, idOrg: 1, nombre: 'Feria de Diseño Plaza', fecha: '2026-06-20', horario: '14:00 a 20:00', privacidad: 'publica', ubicacion: 'Plaza Principal', requisitosTipo: 'texto', requisitos: 'Llevar mesa.', rubros: 'Indumentaria, Diseño', desc: 'Gran feria de diseño independiente.', costo: 5000, cuposTotales: 50, cuposDisponibles: 12, estado: 'Aceptada', imagen: './img/feria-diseno-plaza.png' },
-                { id: 102, idOrg: 1, nombre: 'Mercado de Productores', fecha: '2026-06-27', horario: '10:00 a 18:00', privacidad: 'publica', ubicacion: 'Parque Central', requisitosTipo: 'texto', requisitos: 'Libreta sanitaria.', rubros: 'Gastronomía', desc: 'Evento gastronómico mensual.', costo: 3500, cuposTotales: 30, cuposDisponibles: 5, estado: 'Aceptada', imagen: './img/mercado-productores.png' },
-                { id: 103, idOrg: 1, nombre: 'Feria Vintage Total', fecha: '2026-07-15', horario: '12:00 a 19:00', privacidad: 'publica', ubicacion: 'Centro Cultural', requisitosTipo: 'texto', requisitos: '-', rubros: 'Todos', desc: 'Feria exclusiva de invierno.', costo: 6000, cuposTotales: 20, cuposDisponibles: 1, estado: 'Aceptada', imagen: './img/feria-vintage-total.png' },
-                { id: 104, idOrg: 1, nombre: 'Festival de Emprendedores UNLP', fecha: '2026-08-10', horario: '09:00 a 17:00', privacidad: 'publica', ubicacion: 'Patio UNLP', requisitosTipo: 'texto', requisitos: 'Ser alumno regular o graduado.', rubros: 'Todos', desc: 'Gran evento anual universitario.', costo: 2500, cuposTotales: 100, cuposDisponibles: 85, estado: 'Aceptada', imagen: './img/festival-emprendedores-unlp.png' },
-                { id: 105, idOrg: 1, nombre: 'Feria de Verano Pasada', fecha: '2026-02-10', horario: '10:00 a 18:00', privacidad: 'publica', ubicacion: 'Galpón Tolosa', requisitosTipo: 'texto', requisitos: '-', rubros: 'Todos', desc: 'Ya finalizó con total éxito.', costo: 2000, cuposTotales: 20, cuposDisponibles: 0, estado: 'Realizada', imagen: './img/feria-verano-pasada.png' },
-                { id: 106, idOrg: 1, nombre: 'Expo Invierno', fecha: '2026-07-20', horario: '11:00 a 18:00', privacidad: 'publica', ubicacion: 'Pasaje Dardo Rocha', requisitosTipo: 'texto', requisitos: 'Ninguno', rubros: 'Todos', desc: 'Edición especial de vacaciones.', costo: 4000, cuposTotales: 40, cuposDisponibles: 10, estado: 'Aceptada', imagen: './img/expo-invierno.png' },
-                { id: 107, idOrg: 1, nombre: 'Expo Primaveral Meridiano', fecha: '2026-09-21', horario: '14:00 a 22:00', privacidad: 'publica', ubicacion: 'Estación Provincial', requisitosTipo: 'texto', requisitos: 'Traer gazebo', rubros: 'Todos', desc: 'Recibimos la primavera con todo el color.', costo: 4500, cuposTotales: 80, cuposDisponibles: 80, estado: 'Aceptada', imagen: './img/expo-primaveral-meridiano.png' },
-                { id: 108, idOrg: 1, nombre: 'Feria del Libro y Arte', fecha: '2026-08-25', horario: '10:00 a 19:00', privacidad: 'publica', ubicacion: 'Centro Universitario', requisitosTipo: 'texto', requisitos: 'Ganas de emprender', rubros: 'Artesanias, Libros, Diseño', desc: 'Encuentro cultural.', costo: 3000, cuposTotales: 25, cuposDisponibles: 20, estado: 'Aceptada', imagen: './img/feria-libro-y-arte.png' },
-                { id: 109, idOrg: 1, nombre: 'Mercado de Pulgas Platense', fecha: '2026-07-05', horario: '09:00 a 16:00', privacidad: 'publica', ubicacion: 'Plaza Rocha', requisitosTipo: 'texto', requisitos: 'Antigüedades permitidas', rubros: 'Artesanias, Accesorios', desc: 'Un viaje en el tiempo.', costo: 2000, cuposTotales: 60, cuposDisponibles: 45, estado: 'Aceptada', imagen: './img/mercado-pulgas-platense.png' }
+                { id: 101, idOrg: 1, nombre: 'Feria de Diseño Plaza', fecha: '2026-06-20', horario: '14:00 a 20:00', privacidad: 'publica', ubicacion: 'Plaza Principal', requisitosTipo: 'texto', requisitos: 'Llevar mesa.', rubros: 'Indumentaria, Diseño', desc: 'Gran feria de diseño independiente.', costo: 5000, porcentajeReserva: 30, cuposTotales: 50, cuposDisponibles: 12, estado: 'Aceptada', imagen: './img/feria-diseno-plaza.png' },
+                { id: 102, idOrg: 1, nombre: 'Mercado de Productores', fecha: '2026-06-27', horario: '10:00 a 18:00', privacidad: 'publica', ubicacion: 'Parque Central', requisitosTipo: 'texto', requisitos: 'Libreta sanitaria.', rubros: 'Gastronomía', desc: 'Evento gastronómico mensual.', costo: 3500, porcentajeReserva: 20, cuposTotales: 30, cuposDisponibles: 5, estado: 'Aceptada', imagen: './img/mercado-productores.png' },
+                { id: 103, idOrg: 1, nombre: 'Feria Vintage Total', fecha: '2026-07-15', horario: '12:00 a 19:00', privacidad: 'publica', ubicacion: 'Centro Cultural', requisitosTipo: 'texto', requisitos: '-', rubros: 'Todos', desc: 'Feria exclusiva de invierno.', costo: 6000, porcentajeReserva: 25, cuposTotales: 20, cuposDisponibles: 1, estado: 'Aceptada', imagen: './img/feria-vintage-total.png' },
+                { id: 104, idOrg: 1, nombre: 'Festival de Emprendedores UNLP', fecha: '2026-08-10', horario: '09:00 a 17:00', privacidad: 'publica', ubicacion: 'Patio UNLP', requisitosTipo: 'texto', requisitos: 'Ser alumno regular o graduado.', rubros: 'Todos', desc: 'Gran evento anual universitario.', costo: 2500, porcentajeReserva: 40, cuposTotales: 100, cuposDisponibles: 85, estado: 'Aceptada', imagen: './img/festival-emprendedores-unlp.png' },
+                { id: 105, idOrg: 1, nombre: 'Feria de Verano Pasada', fecha: '2026-02-10', horario: '10:00 a 18:00', privacidad: 'publica', ubicacion: 'Galpón Tolosa', requisitosTipo: 'texto', requisitos: '-', rubros: 'Todos', desc: 'Ya finalizó con total éxito.', costo: 2000, porcentajeReserva: 30, cuposTotales: 20, cuposDisponibles: 0, estado: 'Realizada', imagen: './img/feria-verano-pasada.png' },
+                { id: 106, idOrg: 1, nombre: 'Expo Invierno', fecha: '2026-07-20', horario: '11:00 a 18:00', privacidad: 'publica', ubicacion: 'Pasaje Dardo Rocha', requisitosTipo: 'texto', requisitos: 'Ninguno', rubros: 'Todos', desc: 'Edición especial de vacaciones.', costo: 4000, porcentajeReserva: 30, cuposTotales: 40, cuposDisponibles: 10, estado: 'Aceptada', imagen: './img/expo-invierno.png' },
+                { id: 107, idOrg: 1, nombre: 'Expo Primaveral Meridiano', fecha: '2026-09-21', horario: '14:00 a 22:00', privacidad: 'publica', ubicacion: 'Estación Provincial', requisitosTipo: 'texto', requisitos: 'Traer gazebo', rubros: 'Todos', desc: 'Recibimos la primavera con todo el color.', costo: 4500, porcentajeReserva: 30, cuposTotales: 80, cuposDisponibles: 80, estado: 'Aceptada', imagen: './img/expo-primaveral-meridiano.png' },
+                { id: 108, idOrg: 1, nombre: 'Feria del Libro y Arte', fecha: '2026-08-25', horario: '10:00 a 19:00', privacidad: 'publica', ubicacion: 'Centro Universitario', requisitosTipo: 'texto', requisitos: 'Ganas de emprender', rubros: 'Artesanias, Libros, Diseño', desc: 'Encuentro cultural.', costo: 3000, porcentajeReserva: 20, cuposTotales: 25, cuposDisponibles: 20, estado: 'Aceptada', imagen: './img/feria-libro-y-arte.png' },
+                { id: 109, idOrg: 1, nombre: 'Mercado de Pulgas Platense', fecha: '2026-07-05', horario: '09:00 a 16:00', privacidad: 'publica', ubicacion: 'Plaza Rocha', requisitosTipo: 'texto', requisitos: 'Antigüedades permitidas', rubros: 'Artesanias, Accesorios', desc: 'Un viaje en el tiempo.', costo: 2000, porcentajeReserva: 50, cuposTotales: 60, cuposDisponibles: 45, estado: 'Aceptada', imagen: './img/mercado-pulgas-platense.png' }
             ],
             reservas: [
                 { id: 1001, idFeria: 101, idEnt: 2, estado: 'pendiente', fechaSolicitud: '2026-06-01', adjuntos: null },
@@ -863,7 +903,7 @@
             usuarios: [...MOCK_DATA.usuarios], ferias: [...MOCK_DATA.ferias], reservas: [...MOCK_DATA.reservas]
         };
 
-        // --- 2. CONTROLADOR PRINCIPAL ---
+        // --- CONTROLADOR PRINCIPAL ---
         const app = {
             
             formatTexto: (texto) => {
@@ -893,6 +933,17 @@
                 });
                 if(enLista) { htmlFinal += '</ul>'; } 
                 return htmlFinal;
+            },
+
+            evaluarRubroOtro: (selectElem, inputId) => {
+                const input = document.getElementById(inputId);
+                if (selectElem.value === 'Otro') {
+                    input.classList.remove('oculto');
+                    input.required = true;
+                } else {
+                    input.classList.add('oculto');
+                    input.required = false;
+                }
             },
 
             ajustarTextarea: (e) => {
@@ -1192,17 +1243,14 @@
                         
                         if (app.cropperInstance) app.cropperInstance.destroy();
                         
-                        // Determinamos si requiere un encuadre circular o de banner
                         const esPerfilRedondo = imgElementId.includes('ent') || imgElementId.includes('org');
                         const esPortadaFeria = imgElementId.includes('feria');
                         
                         app.cropperInstance = new Cropper(document.getElementById('image-to-crop'), {
-                            // Si es perfil = 1:1. Si es feria = 2:1 (para que encaje perfecto en las cards). Si es otro = 16:9
                             aspectRatio: esPerfilRedondo ? 1 : (esPortadaFeria ? 2 : 16/9),
                             viewMode: 1,
                             ready: function() {
                                 if (esPerfilRedondo) {
-                                    // Agregamos la clase círculo para ajustar la vista del encuadre
                                     document.querySelector('.cropper-view-box').classList.add('circulo');
                                     document.querySelector('.cropper-face').classList.add('circulo');
                                 }
@@ -1223,7 +1271,6 @@
                 app.cerrarCropper();
             },
 
-            // Carga individual para las fotos de la galería del feriante
             cargarFotoGaleria: (input, idFoto) => {
                 const file = input.files[0];
                 if (file) {
@@ -1243,13 +1290,11 @@
                     let igHtml = u.entData.ig ? `<a href="${u.entData.ig}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.entData.ig}</a>` : 'No especificado';
                     let fbHtml = u.entData.fb ? `<a href="${u.entData.fb}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.entData.fb}</a>` : 'No especificado';
                     
-                    // Render de galería de fotos si posee cargadas
                     let galeriaHtml = '';
                     if (u.entData.galeria && u.entData.galeria.length > 0) {
                         galeriaHtml += `<div style="margin-top: 15px;"><p style="font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-images"></i> Galería de Trabajos/Productos:</p><div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">`;
                         u.entData.galeria.forEach(img => {
                             if(img && !img.includes('placeholder')) {
-                                // Agregamos onclick y cursor pointer para que sea cliqueable
                                 galeriaHtml += `<img src="${img}" onclick="app.mostrarImagenGrande('${img}')" style="width:100%; height:120px; object-fit:cover; border-radius:var(--radio); border:1px solid var(--borde); box-shadow: var(--sombra); cursor: pointer;" title="Click para agrandar">`;
                             }
                         });
@@ -1262,6 +1307,7 @@
                             <h3 style="margin-bottom: 0;">${u.name}</h3>
                             <p class="badge" style="background: var(--verde-menta); color: var(--verde-bosque);">Feriante Emprendedor</p>
                             <div style="background: var(--arena-calido); width: 100%; padding: 15px; border-radius: var(--radio); text-align: left; margin-top: 10px;">
+                                <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-user-pen" style="color: var(--verde-bosque);"></i> ¿Quién soy?:</strong><br>${u.entData.bio || 'Sin descripción disponible'}</p>
                                 <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-tag" style="color: var(--verde-bosque);"></i> Rubro:</strong> ${u.entData.rubro}</p>
                                 <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-box" style="color: var(--verde-bosque);"></i> Productos:</strong><br>${u.entData.productos}</p>
                                 <p style="margin-bottom: 8px; word-break: break-all;"><strong><i class="fa-brands fa-instagram" style="color: var(--verde-bosque);"></i> Instagram:</strong> <br>${igHtml}</p>
@@ -1309,8 +1355,12 @@
 
             guardarOnboardingEnt: (e) => {
                 e.preventDefault();
+                const selVal = document.getElementById('ent-rubro').value;
+                const rubroReal = selVal === 'Otro' ? document.getElementById('ent-rubro-otro').value : selVal;
+
                 state.currentUser.entData = { 
-                    rubro: document.getElementById('ent-rubro').value, 
+                    rubro: rubroReal, 
+                    bio: document.getElementById('ent-bio').value,
                     productos: document.getElementById('ent-productos').value, 
                     ig: document.getElementById('ent-ig').value, 
                     fb: document.getElementById('ent-fb').value, 
@@ -1348,13 +1398,25 @@
             cargarPerfilEnt: () => {
                 const data = state.currentUser.entData;
                 if(data) {
-                    document.getElementById('edit-ent-rubro').value = data.rubro || ''; 
+                    const selectElem = document.getElementById('edit-ent-rubro');
+                    const inputOtroElem = document.getElementById('edit-ent-rubro-otro');
+                    
+                    const esStandard = Array.from(selectElem.options).some(opt => opt.value === data.rubro && data.rubro !== 'Otro');
+                    if (esStandard) {
+                        selectElem.value = data.rubro;
+                        inputOtroElem.classList.add('oculto');
+                    } else {
+                        selectElem.value = 'Otro';
+                        inputOtroElem.value = data.rubro;
+                        inputOtroElem.classList.remove('oculto');
+                    }
+
+                    document.getElementById('edit-ent-bio').value = data.bio || '';
                     document.getElementById('edit-ent-productos').value = data.productos || '';
                     document.getElementById('edit-ent-ig').value = data.ig || ''; 
                     document.getElementById('edit-ent-fb').value = data.fb || ''; 
                     if(data.avatar) document.getElementById('img-preview-ent').src = data.avatar;
                     
-                    // Sincronizar fotos de la galería en la UI
                     for (let i = 1; i <= 4; i++) {
                         if (data.galeria && data.galeria[i - 1]) {
                             document.getElementById(`img-galeria-${i}`).src = data.galeria[i - 1];
@@ -1368,7 +1430,9 @@
             guardarPerfilEnt: (e) => {
                 e.preventDefault();
                 
-                // Mapear fotos de la galería
+                const selVal = document.getElementById('edit-ent-rubro').value;
+                const rubroReal = selVal === 'Otro' ? document.getElementById('edit-ent-rubro-otro').value : selVal;
+
                 const fotosGuardadas = [];
                 for(let i = 1; i <= 4; i++) {
                     const src = document.getElementById(`img-galeria-${i}`).src;
@@ -1378,7 +1442,8 @@
                 }
 
                 state.currentUser.entData = { 
-                    rubro: document.getElementById('edit-ent-rubro').value, 
+                    rubro: rubroReal, 
+                    bio: document.getElementById('edit-ent-bio').value,
                     productos: document.getElementById('edit-ent-productos').value, 
                     ig: document.getElementById('edit-ent-ig').value, 
                     fb: document.getElementById('edit-ent-fb').value, 
@@ -1444,7 +1509,6 @@
                     const solicitudesAca = state.reservas.filter(r => r.idFeria === f.id && r.estado === 'pendiente').length;
                     const badgeSol = (!esHistorial && solicitudesAca > 0) ? `<span style="color:var(--rojo-tomate); float:right;" title="${solicitudesAca} solicitudes nuevas"><i class="fa-solid fa-circle-exclamation fa-beat"></i></span>` : '';
 
-                    // Badge de privacidad en las tarjetas de control del organizador
                     const privacidadBadge = f.privacidad === 'privada' ? `<span class="badge cancelada" style="margin-left: 5px;"><i class="fa-solid fa-lock"></i> PRIVADA</span>` : `<span class="badge aceptada" style="margin-left: 5px;"><i class="fa-solid fa-globe"></i> PÚBLICA</span>`;
 
                     return `
@@ -1501,7 +1565,8 @@
                 const esPub = (f.privacidad || 'publica') === 'publica';
                 const chkPriv = document.getElementById('ed-privacidad-chk');
                 chkPriv.checked = esPub;
-                app.cambiarLabelPrivacidad(chkPriv);                document.getElementById('img-preview-edit-feria').src = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
+                app.cambiarLabelPrivacidad(chkPriv);                
+                document.getElementById('img-preview-edit-feria').src = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
                 
                 const ocupados = f.cuposTotales - f.cuposDisponibles;
                 document.getElementById('ed-cupos').min = ocupados;
@@ -1526,7 +1591,6 @@
                     if (el.id !== 'ed-id' && el.id !== 'ed-nombre') { el.disabled = esInactiva; }
                 });
 
-                // Condición 2: Si es una feria terminada, mostrar solo dos pestañas/ventanas (Detalles y feriantes)
                 if (esInactiva) {
                     document.getElementById('btn-guardar-edicion').classList.add('oculto');
                     document.getElementById('btn-cancelar-feria').classList.add('oculto');
@@ -1541,7 +1605,6 @@
                     document.getElementById('gestion-tab-solicitudes').classList.remove('oculto');
                 }
 
-                // Condición 3: Descarga de reporte PDF en ferias terminadas realizadas
                 const containerPdf = document.getElementById('gestion-pdf-container');
                 if (estado.toLowerCase() === 'realizada') {
                     containerPdf.innerHTML = `<button type="button" class="btn-primario btn-chico" onclick="app.descargarReportePdf(${f.id})"><i class="fa-solid fa-file-pdf"></i> Descargar Reporte PDF</button>`;
@@ -1549,7 +1612,7 @@
                     containerPdf.innerHTML = '';
                 }
 
-                // --- 1. RENDERIZAR ACEPTADOS ---
+                // --- RENDERIZAR ACEPTADOS ---
                 const containerFeriantes = document.getElementById('gestion-feriantes-aceptados');
                 const aceptados = state.reservas.filter(r => r.idFeria === f.id && ['a pagar', 'reservada', 'pago total realizado', '¡nos vemos en la feria!'].includes(r.estado.toLowerCase()));
                 
@@ -1581,7 +1644,7 @@
                 htmlAceptados += `</tbody></table></div>`;
                 containerFeriantes.innerHTML = htmlAceptados;
 
-                // --- 2. RENDERIZAR SOLICITUDES PENDIENTES ---
+                // --- RENDERIZAR SOLICITUDES PENDIENTES ---
                 const containerSol = document.getElementById('gestion-solicitudes-container');
                 const solicitudesParaMostrar = state.reservas.filter(r => r.idFeria === f.id && ['pendiente', 'rechazada'].includes(r.estado.toLowerCase()));
                 const pendientes = solicitudesParaMostrar.filter(r => r.estado === 'pendiente');
@@ -1627,7 +1690,6 @@
                 app.mostrarVista('view-feria-gestion');
             },
 
-            // Generador dinámico del PDF utilizando la biblioteca jsPDF
             descargarReportePdf: (idFeria) => {
                 const f = state.ferias.find(x => x.id === idFeria);
                 if (!f) return;
@@ -1635,31 +1697,23 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
 
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(22);
-                doc.setTextColor(30, 86, 49); // Verde Bosque
+                doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(30, 86, 49);
                 doc.text("FeriARG - Reporte de Feria", 20, 20);
 
-                doc.setFontSize(14);
-                doc.setTextColor(44, 44, 44);
+                doc.setFontSize(14); doc.setTextColor(44, 44, 44);
                 doc.text(`Evento: ${f.nombre}`, 20, 32);
 
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal"); doc.setFontSize(11);
                 doc.text(`Fecha de Realización: ${f.fecha}`, 20, 42);
                 doc.text(`Ubicación: ${f.ubicacion}`, 20, 49);
                 doc.text(`Horario: ${f.horario}`, 20, 56);
                 doc.text(`Costo de Stand: $${f.costo} ARS`, 20, 63);
                 doc.text(`Total de Stands Ofrecidos: ${f.cuposTotales}`, 20, 70);
 
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(14);
-                doc.setTextColor(30, 86, 49);
+                doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(30, 86, 49);
                 doc.text("Feriantes / Emprendedores que asistieron:", 20, 85);
 
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(11);
-                doc.setTextColor(44, 44, 44);
+                doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(44, 44, 44);
 
                 const asistentes = state.reservas.filter(r => r.idFeria === f.id && ['pago total realizado', '¡nos vemos en la feria!', 'reservada'].includes(r.estado.toLowerCase()));
                 
@@ -1725,6 +1779,12 @@
                 document.getElementById('container-requisitos-archivo').classList.toggle('oculto', tipo !== 'archivo');
             },
 
+            actualizarTextoComisionNF: () => {
+                const costo = parseFloat(document.getElementById('nf-costo').value) || 0;
+                const comision = Math.round((costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
+                document.getElementById('nf-texto-comision').textContent = `FeriARG se lleva ${COMISION_PLATAFORMA_PORCENTAJE}% de comisión por cargo de servicio: $${comision}`;
+            },
+
             crearFeria: (e) => {
                 e.preventDefault();
                 
@@ -1741,6 +1801,9 @@
                 }
 
                 const cupos = parseInt(document.getElementById('nf-cupos').value);
+                const pctReserva = parseInt(document.getElementById('nf-porcentaje-reserva').value) || 30;
+                const esPublica = document.getElementById('nf-privacidad-chk').checked ? 'publica' : 'privada';
+
                 let imagenSrc = document.getElementById('img-preview-nueva-feria').src;
                 if(imagenSrc.includes('placeholder')) { imagenSrc = ''; }
                 
@@ -1748,7 +1811,6 @@
                 const horaFin = document.getElementById('nf-horario-fin').value;
                 const stringHorario = `${horaInicio} a ${horaFin}`;
 
-                // Procesamiento de Reglamento/Requisitos de la feria (Texto escrito o archivo cargado)
                 const tipoReq = document.getElementById('nf-tipo-requisitos').value;
                 let requisitosDato = '';
                 if (tipoReq === 'texto') {
@@ -1760,8 +1822,9 @@
 
                 const nuevaFeria = {
                     id: Date.now(), idOrg: state.currentUser.id, nombre: document.getElementById('nf-nombre').value,
-                    fecha: fechaFeria, horario: stringHorario, privacidad: document.getElementById('nf-privacidad').value,
+                    fecha: fechaFeria, horario: stringHorario, privacidad: esPublica,
                     ubicacion: document.getElementById('nf-ubicacion').value, costo: parseInt(document.getElementById('nf-costo').value),
+                    porcentajeReserva: pctReserva,
                     cuposTotales: cupos, cuposDisponibles: cupos, rubros: document.getElementById('nf-rubros').value,
                     requisitosTipo: tipoReq, requisitos: requisitosDato, desc: document.getElementById('nf-desc').value,
                     estado: 'Aceptada', imagen: imagenSrc
@@ -1870,7 +1933,6 @@
                     const estaActiva = !['cancelada', 'realizada', 'en revisión'].includes((f.estado || '').toLowerCase());
                     const yaPostulado = state.reservas.some(r => r.idFeria === f.id && r.idEnt === state.currentUser.id);
                     
-                    // Condición 1: Si es privada, no aparece públicamente en el explorador
                     const esPublica = (f.privacidad || 'publica') === 'publica';
 
                     return matchBusqueda && matchFecha && estaActiva && !yaPostulado && esPublica;
@@ -1891,8 +1953,11 @@
 
                 paginadas.forEach(f => {
                     const org = state.usuarios.find(u => u.id === f.idOrg) || { orgData: { name: 'Org. Independiente' } };
-                    const badgeCupo = f.cuposDisponibles > 0 ? `<span class="badge cupos">${f.cuposDisponibles} cupos libres</span>` : `<span class="badge agotado">Agotado</span>`;
+                    const badgeCupo = f.cuposDisponibles > 0 ? `<span class="badge cupos">${f.cuposDisponibles} libres</span>` : `<span class="badge agotado">Agotado</span>`;
                     const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
+                    
+                    const pctRes = f.porcentajeReserva || 30;
+                    const valRes = Math.round((f.costo * pctRes) / 100);
 
                     grid.innerHTML += `
                         <div class="card">
@@ -1911,9 +1976,16 @@
                                 <div class="card-info"><i class="fa-solid fa-location-dot"></i> ${f.ubicacion}</div>
                                 <div class="card-info mt-2"><i class="fa-solid fa-tags"></i> ${f.rubros}</div>
                             </div>
-                            <div class="card-footer" style="flex-direction: column; gap: 12px; align-items: stretch; padding: 15px;">
-                                <span style="font-weight:bold; font-size: 1.3rem; color:var(--verde-bosque); text-align: center;">$${f.costo}</span>
-                                <button class="btn-secundario" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles</button>
+                            <div class="card-footer" style="flex-direction: column; gap: 6px; align-items: stretch; padding: 15px; background: #fafafc;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--carbon); font-size: 0.95rem;">Stand Total:</span>
+                                    <strong style="color: var(--verde-bosque); font-size: 1.15rem;">$${f.costo}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--borde); padding-top: 4px; font-size: 0.85rem; color: #555;">
+                                    <span>Reserva (${pctRes}%):</span>
+                                    <strong style="color: var(--rojo-tomate);">$${valRes}</strong>
+                                </div>
+                                <button class="btn-secundario mt-2" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles</button>
                             </div>
                         </div>
                     `;
@@ -1938,7 +2010,6 @@
 
                 let containerModal = document.getElementById('detalle-feria-content');
                 
-                // Condición 2: Si es una feria terminada desde la perspectiva del feriante, desplegar una estructura limpia de 2 ventanas/secciones
                 if (esFeriaTerminada) {
                     const asistentes = state.reservas.filter(r => r.idFeria === f.id && ['pago total realizado', '¡nos vemos en la feria!', 'reservada'].includes(r.estado.toLowerCase()));
                     let feriantesHtml = '';
@@ -1954,7 +2025,6 @@
                         feriantesHtml += `</tbody></table></div>`;
                     }
 
-                    // Condición 3: Descarga de reporte PDF para el feriante en vistas terminadas
                     let botonPdfFeriante = f.estado.toLowerCase() === 'realizada' ? `<button class="btn-primario btn-chico" onclick="app.descargarReportePdf(${f.id})" style="margin-bottom:15px;"><i class="fa-solid fa-file-pdf"></i> Descargar Detalles (PDF)</button>` : '';
 
                     containerModal.innerHTML = `
@@ -1980,30 +2050,47 @@
                     return;
                 }
 
+                const pctReserva = f.porcentajeReserva || 30;
+                const valorReserva = Math.round((f.costo * pctReserva) / 100);
+                const montoComision = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
+
                 let btnHtml = '';
                 if(yaPostulado) { 
                     btnHtml = `<button class="btn-outline" style="width:100%; border-color:grey; color:grey; padding: 15px;" onclick="app.cerrarModalFeria()">Cerrar Detalles</button>`; 
-                } 
-                else if (f.cuposDisponibles <= 0) { 
+                } else if (f.cuposDisponibles <= 0) { 
                     btnHtml = `<button class="btn-primario" disabled style="width:100%; background:grey; padding: 15px;">Cupos Agotados</button>`; 
-                } 
-                else if (!state.currentUser) { 
+                } else if (!state.currentUser) { 
                     btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem;" onclick="app.cerrarModalFeria(); app.mostrarVista('view-auth')">Iniciá sesión para postularte</button>`; 
-                }
-                else { 
-                    btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem;" onclick="app.abrirModalPostulacion(${f.id})">Avanzar a Pre-reserva ($${f.costo})</button>`; 
+                } else { 
+                    btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem; background-color: var(--verde-bosque);" onclick="app.abrirModalPostulacion(${f.id})">Avanzar a Pre-reserva (gratis)</button>`; 
                 }
 
                 const org = state.usuarios.find(u => u.id === f.idOrg) || { orgData: { name: 'Organizador' }, id: f.idOrg };
                 const imgSrc = f.imagen || `https://via.placeholder.com/800x300/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
 
-                // Condición 5: Renderizado de reglamento según corresponda (Texto o enlace de descarga a documento PDF)
                 let requisitosVisualHtml = '';
                 if (f.requisitosTipo === 'archivo') {
                     requisitosVisualHtml = `<a href="${f.requisitos}" target="_blank" class="btn-outline btn-chico" style="display:inline-block; text-decoration:none;"><i class="fa-solid fa-file-pdf"></i> Ver Reglamento/Requisitos Oficial (PDF)</a>`;
                 } else {
                     requisitosVisualHtml = `<p>${f.requisitos || '-'}</p>`;
                 }
+
+                const desgloseEconomico = `
+                    <div style="background-color: #eef7f4; border: 1px solid var(--verde-menta); padding: 15px; border-radius: var(--radio); margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="color: var(--carbon); font-weight: bold;">Valor Total del Stand:</span>
+                            <span style="color: var(--verde-bosque); font-weight: bold; font-size: 1.1rem;">$${f.costo}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 8px;">
+                            <span style="color: #555;">Valor de la Reserva acordada (${pctReserva}%):</span>
+                            <span style="color: var(--rojo-tomate); font-weight: bold;">$${valorReserva}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #444; text-align: center;">
+                            FeriARG se lleva ${COMISION_PLATAFORMA_PORCENTAJE}% de comisión por cargo de servicio: <strong>$${montoComision}</strong>.<br>
+                            <span style="font-size: 0.75rem; color: #666;">(Por el momento la comisión es del 0% para todas las transacciones)</span>
+                        </div>
+                    </div>
+                `;
 
                 const html = `
                     <img src="${imgSrc}" style="width: calc(100% + 60px); margin: -30px -30px 20px -30px; height: 200px; object-fit: cover; border-top-left-radius: var(--radio); border-top-right-radius: var(--radio);" alt="Imagen de Feria">
@@ -2013,13 +2100,15 @@
                             <p style="color: gray; margin: 0; font-size: 1.1rem;">Organiza: <strong>${org.orgData ? org.orgData.name : 'Organizador'}</strong></p>
                             <button class="btn-outline btn-chico" onclick="app.abrirPerfilUsuario(${org.id})"><i class="fa-solid fa-building-user"></i> Ver Perfil</button>
                         </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                             <div><strong><i class="fa-regular fa-calendar"></i> Fecha:</strong><br>${f.fecha}</div>
                             <div><strong><i class="fa-regular fa-clock"></i> Horario:</strong><br>${f.horario}</div>
                             <div><strong><i class="fa-solid fa-location-dot"></i> Ubicación:</strong><br>${f.ubicacion}</div>
                             <div><strong><i class="fa-solid fa-users"></i> Cupos:</strong><br>${f.cuposDisponibles}/${f.cuposTotales} libres</div>
                         </div>
-                        <div style="background: var(--arena-calido); padding: 20px; border-radius: var(--radio); margin-bottom: 25px;">
+
+                        <div style="background: var(--arena-calido); padding: 20px; border-radius: var(--radio); margin-bottom: 20px;">
                             <h4 style="margin-bottom: 10px;">Sobre la feria</h4>
                             <p style="font-size:1rem; margin-bottom: 15px;">${f.desc}</p>
                             <p style="font-size:1rem; margin-bottom: 10px;"><strong>Rubros permitidos:</strong> ${f.rubros}</p>
@@ -2028,13 +2117,17 @@
                                 <div style="margin-top:5px;">${requisitosVisualHtml}</div>
                             </div>
                         </div>
-                        ${btnHtml}
+
+                        ${desgloseEconomico}
+
+                        <div style="margin-top: 5px; margin-bottom: 25px;">
+                            ${btnHtml}
+                        </div>
                     </div>
                 `;
                 containerModal.innerHTML = html; document.getElementById('modal-detalle-feria').classList.remove('oculto');
             },
             
-            // Alternar pestañas en el modal interno de ferias terminadas
             alternarTabsModal: (vista) => {
                 document.getElementById('modal-tab-info').classList.toggle('active', vista === 'info');
                 document.getElementById('modal-tab-listado').classList.toggle('active', vista === 'listado');
@@ -2053,12 +2146,6 @@
             confirmarPostulacion: (e) => {
                 e.preventDefault();
                 
-                // Condición 6: Alerta nativa de confirmación de bases legales antes del procesamiento
-                const mensajeConfirmacion = "¿Estás seguro de confirmar la postulación? Si presionas aceptar estarías de acuerdo con el reglamento o requisitos de la feria.";
-                if (!confirm(mensajeConfirmacion)) {
-                    return; 
-                }
-
                 const idFeria = parseInt(document.getElementById('post-feria-id').value);
                 const feria = state.ferias.find(f => f.id === idFeria);
                 if(feria && feria.cuposDisponibles > 0) {
@@ -2202,6 +2289,10 @@
                     const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
                     const estadoClase = r.estado.replace(/ /g, '-').replace('¡', '').replace('!', '');
                     
+                    const pctRes = f.porcentajeReserva || 30;
+                    const montoReserva = Math.round((f.costo * pctRes) / 100);
+                    const montoRestanteStand = f.costo - montoReserva;
+
                     let bloqueFechasPago = '';
                     let desdeFormat = '';
                     let hastaFormat = '';
@@ -2223,7 +2314,7 @@
                     let actionButtons = `<button class="btn-secundario" style="width: 100%; margin-bottom: 10px;" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles de Feria</button>`;
 
                     if (r.estado.toLowerCase() === 'a pagar') {
-                        actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, 'reservada')">Pagar Reserva</button>`;
+                        actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, 'reservada')">Pagar Reserva ($${montoReserva})</button>`;
                     } else if (r.estado.toLowerCase() === 'reservada') {
                         const hoy = new Date().toISOString().split('T')[0];
                         if (r.pagoDesde && r.pagoHasta) {
@@ -2232,10 +2323,10 @@
                             } else if (hoy > r.pagoHasta) {
                                 actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: var(--rojo-tomate);" title="Plazo vencido">Plazo de pago vencido</button>`;
                             } else {
-                                actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand</button>`;
+                                actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand ($${montoRestanteStand})</button>`;
                             }
                         } else {
-                            actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand</button>`;
+                            actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand ($${montoRestanteStand})</button>`;
                         }
                     }
 
@@ -2370,7 +2461,7 @@
             procesarTextoLibre: () => { 
                 const input = document.getElementById('chat-input-texto'); const mensaje = input.value.trim(); 
                 if (mensaje !== "") { app.enviarPreguntaChat(mensaje); input.value = ""; input.style.height = '42px'; } 
-            }, // <--- REVISÁ QUE ESTA COMA ESTÉ PUESTA
+            },
             
             cambiarLabelPrivacidad: (chk) => {
                 const label = document.getElementById('label-priv-texto');
@@ -2380,6 +2471,16 @@
                     label.textContent = 'PRIVADA'; label.style.color = 'var(--rojo-tomate)';
                 }
             },
+
+            cambiarLabelPrivacidadNF: (chk) => {
+                const label = document.getElementById('label-priv-nf-texto');
+                if (chk.checked) {
+                    label.textContent = 'PÚBLICA'; label.style.color = 'var(--verde-bosque)';
+                } else {
+                    label.textContent = 'PRIVADA'; label.style.color = 'var(--rojo-tomate)';
+                }
+            },
+
             mostrarImagenGrande: (src) => {
                 let overlay = document.getElementById('lightbox-overlay');
                 if (!overlay) {
@@ -2398,7 +2499,6 @@
         document.addEventListener('click', (e) => { 
             if (!e.target.closest('.menu-usuario')) { app.cerrarMenus(); } 
         });
-        
         
         // --- INICIALIZACIÓN Y LECTURA DE URL (COMPARTIR) ---
         const urlParams = new URLSearchParams(window.location.search);
