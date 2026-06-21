@@ -964,8 +964,10 @@
         <div id="chatbot-body" class="chatbot-body">
             <div class="chat-row bot">
                 <div class="chat-avatar avatar-bot"><i class="fa-solid fa-robot"></i></div>
-                <div class="chat-msg chat-bot">¡Hola! Soy la IA de FeriARG. Puedes escribirme cualquier duda sobre la plataforma.</div>
-            </div>
+                <div class="chat-msg chat-bot">
+    ¡Hola! Soy la IA de FeriARG. Puedes escribirme cualquier duda sobre la plataforma.<br><br>
+    <em style="font-size: 0.82rem; color: #666;">(Tip: si es tu primera consulta del día, puedo demorar unos 30 segundos mientras enciendo los motores 🚀)</em>
+  </div>
         </div>
         <div class="chatbot-input-area" style="padding: 10px; background: var(--blanco); border-top: 1px solid var(--borde); display: flex; gap: 8px; align-items: flex-end;">
             <textarea id="chat-input-texto" class="chat-textarea" placeholder="Escribe tu mensaje..." rows="1" oninput="app.ajustarTextarea(event)" onkeydown="app.chequearEnter(event)"></textarea>
