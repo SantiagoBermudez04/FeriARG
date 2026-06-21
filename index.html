@@ -715,14 +715,38 @@
             </div>
 
             <div class="tabs">
-                <button class="tab-btn active" id="tab-ent-descubrir" onclick="app.switchEntTabs('descubrir')">Descubrir Ferias</button>
+                <!-- NUEVA PESTAÑA PRINCIPAL -->
+                <button class="tab-btn active" id="tab-ent-quienes" onclick="app.switchEntTabs('quienes')">FeriARG</button>
+                <button class="tab-btn" id="tab-ent-descubrir" onclick="app.switchEntTabs('descubrir')">Descubrir Ferias</button>
                 <button class="tab-btn" id="tab-mis-postulaciones" onclick="app.switchEntTabs('postulaciones')">Mis Postulaciones</button>
                 <button class="tab-btn" id="tab-stands-reservados" onclick="app.switchEntTabs('reservados')">Stands Reservados</button>
                 <button class="tab-btn" id="tab-mis-terminadas" onclick="app.switchEntTabs('terminadas')">Ferias Terminadas</button>
                 <button class="tab-btn" id="tab-perfil-ent" onclick="app.switchEntTabs('perfil')">Mi Perfil</button>
             </div>
-            
-            <div id="ent-descubrir-container">
+
+            <!-- NUEVO CONTENEDOR 0: QUIENES SOMOS (Visible por defecto al entrar) -->
+            <div id="ent-quienes-container" class="contenedor-central" style="background: var(--blanco); padding: 40px 30px; border-radius: var(--radio); box-shadow: var(--sombra); max-width: 800px; margin: 10px auto 30px auto;">
+                <h2 style="font-size: 2.2rem; color: var(--verde-bosque); margin-bottom: 10px;">¿Qué es FeriARG?</h2>
+                <p style="font-size: 1.1rem; color: var(--carbon); line-height: 1.8; margin-bottom: 25px;">
+                    Nacimos con una misión clara: <strong>conectar a los mejores emprendedores con los organizadores de ferias de la región</strong>. Sabemos que detrás de cada producto hay horas de taller y dedicación, y detrás de cada evento, un enorme esfuerzo logístico. FeriARG es el puente digital para que se encuentren de forma directa y ordenada.
+                </p>
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 25px;">
+                    <div style="background: var(--arena-calido); padding: 20px; border-radius: var(--radio); width: 220px;">
+                        <i class="fa-solid fa-store" style="font-size: 2.5rem; color: var(--rojo-tomate);"></i>
+                        <h4 style="margin-top: 10px; font-size: 1.2rem;">Descubrí</h4>
+                        <p style="font-size: 0.9rem; color: gray;">Encontrá tu próximo punto de venta en segundos.</p>
+                    </div>
+                    <div style="background: var(--arena-calido); padding: 20px; border-radius: var(--radio); width: 220px;">
+                        <i class="fa-solid fa-handshake" style="font-size: 2.5rem; color: var(--verde-bosque);"></i>
+                        <h4 style="margin-top: 10px; font-size: 1.2rem;">Conectá</h4>
+                        <p style="font-size: 0.9rem; color: gray;">Postulate a stands con un solo clic.</p>
+                    </div>
+                </div>
+                <button class="btn-primario" style="font-size: 1.1rem; padding: 12px 30px; background-color: var(--verde-bosque);" onclick="app.switchEntTabs('descubrir')"><i class="fa-solid fa-compass"></i> Ver ferias disponibles</button>
+            </div>
+
+            <!-- CONTENEDOR 1: DESCUBRIR (Fijate que ahora le agregamos la clase "oculto") -->
+            <div id="ent-descubrir-container" class="oculto">
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                     <input type="text" class="filtros" id="filtro-ferias" placeholder="Buscar por lugar, nombre o rubro..." onkeyup="app.renderEntExplorer()" style="flex: 1; min-width: 200px;">
                     <input type="date" class="filtros" id="filtro-fecha-descubrir" onchange="app.renderEntExplorer()" style="width: auto;">
@@ -2173,22 +2197,22 @@
             cerrarAdjuntos: () => { document.getElementById('modal-adjuntos').classList.add('oculto'); },
 
             // --- FLUJO FERIANTE (Con validación de anónimos) ---
-            // --- FLUJO FERIANTE (Con validación de anónimos) ---
             switchEntTabs: (tab) => {
+                document.getElementById('tab-ent-quienes').classList.toggle('active', tab === 'quienes');
                 document.getElementById('tab-ent-descubrir').classList.toggle('active', tab === 'descubrir');
                 document.getElementById('tab-mis-postulaciones').classList.toggle('active', tab === 'postulaciones');
                 document.getElementById('tab-stands-reservados').classList.toggle('active', tab === 'reservados');
                 document.getElementById('tab-mis-terminadas').classList.toggle('active', tab === 'terminadas');
                 document.getElementById('tab-perfil-ent').classList.toggle('active', tab === 'perfil');
                 
-                // NUEVO: Oculta las 3 cajas de métricas si el usuario no está logueado
                 const contenedorStats = document.getElementById('ent-stats-container');
                 if (contenedorStats) {
                     contenedorStats.classList.toggle('oculto', !state.currentUser);
                 }
 
-                // REQUISITO 1: Si no está logueado y toca cualquier pestaña que no sea "descubrir", bloqueamos
-                if (!state.currentUser && tab !== 'descubrir') {
+                // REQUISITO 1 modificado: Los anónimos tienen permiso para ver "descubrir" y "quienes"
+                if (!state.currentUser && tab !== 'descubrir' && tab !== 'quienes') {
+                    document.getElementById('ent-quienes-container').classList.add('oculto');
                     document.getElementById('ent-descubrir-container').classList.add('oculto');
                     document.getElementById('grid-ferias-postuladas').classList.add('oculto');
                     document.getElementById('ent-terminadas-container').classList.add('oculto');
@@ -2200,7 +2224,7 @@
                     document.getElementById('ent-anon-notice').classList.add('oculto');
                 }
 
-                // Flujo normal para usuarios registrados o pestaña Descubrir
+                document.getElementById('ent-quienes-container').classList.toggle('oculto', tab !== 'quienes');
                 document.getElementById('ent-descubrir-container').classList.toggle('oculto', tab !== 'descubrir');
                 document.getElementById('grid-ferias-postuladas').classList.toggle('oculto', tab !== 'postulaciones' && tab !== 'reservados');
                 document.getElementById('ent-terminadas-container').classList.toggle('oculto', tab !== 'terminadas');
@@ -2215,7 +2239,7 @@
                 app.actualizarNotificaciones();
             },
 
-            initEntFlow: () => { app.mostrarVista('view-ent-dashboard'); app.switchEntTabs('descubrir'); },
+            initEntFlow: () => { app.mostrarVista('view-ent-dashboard'); app.switchEntTabs('quienes'); },
 
             generarCardPostulacion: (r, f, esReserva) => {
                 const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
