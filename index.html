@@ -55,7 +55,7 @@
         
         .menu-usuario { position: relative; display: flex; align-items: center; gap: 15px; }
         .menu-dots { background: transparent; color: var(--blanco); font-size: 1.5rem; padding: 5px 10px; }
-        .dropdown { position: absolute; right: 0; top: 40px; background: var(--blanco); box-shadow: var(--sombra); border-radius: var(--radio); width: 200px; overflow: hidden; display: flex; flex-direction: column; }
+        .dropdown { position: absolute; right: 0; top: 40px; background: var(--blanco); box-shadow: var(--sombra); border-radius: var(--radio); width: 230px; overflow: hidden; display: flex; flex-direction: column; }
         .dropdown button { text-align: left; background: none; color: var(--carbon); border-radius: 0; padding: 15px; border-bottom: 1px solid var(--borde); font-weight: normal; }
         .dropdown button:hover { background-color: var(--verde-menta); font-weight: bold; }
         .dropdown button:last-child { border-bottom: none; color: var(--rojo-tomate); }
@@ -299,9 +299,12 @@
         <div class="logo" onclick="app.irAInicio()">
             <i class="fa-solid fa-store"></i> FeriARG
         </div>
-        <div id="nav-login" class="oculto">
-            <button class="btn-primario btn-chico" onclick="app.mostrarVista('view-auth')">Ingresar</button>
+        
+        <div id="nav-login" style="display: flex; gap: 12px; align-items: center;">
+            <button class="btn-outline btn-chico" style="color: var(--blanco); border-color: var(--blanco);" onclick="app.quieroOrganizarAnonimo()">Quiero organizar una feria</button>
+            <button class="btn-primario btn-chico" onclick="app.iniciarSesionLimpio()">Iniciar Sesión / Registrarse</button>
         </div>
+
         <div id="nav-user" class="menu-usuario oculto">
             <button class="btn-campanita" onclick="app.toggleNotificaciones()">
                 <i class="fa-solid fa-bell"></i>
@@ -317,7 +320,7 @@
             
             <button class="menu-dots" onclick="app.toggleMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
             <div id="dropdown-menu" class="dropdown oculto">
-                <button onclick="app.cambiarRol()"><i class="fa-solid fa-people-arrows"></i> Cambiar Rol</button>
+                <button onclick="app.quieroOrganizarLogged()"><i class="fa-solid fa-bullhorn"></i> Quiero organizar una feria</button>
                 <button onclick="app.logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión</button>
             </div>
         </div>
@@ -326,7 +329,7 @@
     <main>
         <div id="alerta-global" class="alerta alerta-exito oculto"></div>
 
-        <section id="view-landing" class="contenedor-central">
+        <section id="view-landing" class="contenedor-central oculto">
             <i class="fa-solid fa-store" style="font-size: 5rem; color: var(--verde-bosque);"></i>
             <h1 style="font-size: 2.5rem; color: var(--verde-bosque);">Bienvenido a FeriARG</h1>
             <p style="font-size: 1.2rem; max-width: 600px;">La primera plataforma que conecta a los organizadores de ferias con los mejores emprendedores.</p>
@@ -662,7 +665,7 @@
             </form>
         </section>
 
-        <section id="view-ent-dashboard" class="oculto">
+        <section id="view-ent-dashboard">
             <div class="view-header">
                 <h2>Mi Panel Feriante</h2>
             </div>
@@ -697,6 +700,13 @@
                 </div>
                 <div id="grid-ferias-explorer" class="grid-cards"></div>
                 <div id="paginacion-explorer" style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;"></div>
+            </div>
+
+            <div id="ent-anon-notice" class="oculto contenedor-central" style="background: var(--blanco); padding: 40px; border-radius: var(--radio); box-shadow: var(--sombra); max-width: 500px; margin: 40px auto;">
+                <i class="fa-solid fa-lock" style="font-size: 3.5rem; color: var(--rojo-tomate); margin-bottom: 10px;"></i>
+                <h3>Función exclusiva para feriantes registrados</h3>
+                <p style="color: gray; margin-bottom: 20px;">Iniciá sesión o registrate gratis para gestionar tus postulaciones, reservar stands y configurar tu perfil.</p>
+                <button class="btn-primario" onclick="app.iniciarSesionLimpio()">Iniciar Sesión / Registrarse</button>
             </div>
             
             <div id="grid-ferias-postuladas" class="grid-cards oculto"></div>
@@ -914,14 +924,14 @@
 
     <script>
         // CONFIGURACIÓN GLOBAL
-        const COMISION_PLATAFORMA_PORCENTAJE = 0; // 0% solicitado por el momento
+        const COMISION_PLATAFORMA_PORCENTAJE = 0; 
 
         const fechaActual = new Date().toISOString().split('T')[0];
         document.getElementById('nf-fecha').min = fechaActual;
         document.getElementById('ed-fecha').min = fechaActual;
         document.getElementById('nf-pago-hasta').min = fechaActual;
 
-        // --- MOCK DATA AMPLIADA ---
+        // --- MOCK DATA ---
         const MOCK_DATA = {
             usuarios: [
                 { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30111111112', ig: 'https://www.instagram.com/meridiano.feria/', fb: '', avatar: './img/feriarg.png' }, entData: null },
@@ -959,9 +969,15 @@
         };
 
         const state = {
-            currentUser: null, currentRole: null,
-            paginaDescubrir: 1, paginaTerminadas: 1,
-            usuarios: [...MOCK_DATA.usuarios], ferias: [...MOCK_DATA.ferias], reservas: [...MOCK_DATA.reservas]
+            currentUser: null, 
+            currentRole: 'feriante', // Por defecto todos entran mirando ferias
+            paginaDescubrir: 1, 
+            paginaTerminadas: 1,
+            targetFeriaRedirect: null, // Para redireccionamiento del Requisito 2
+            targetRolRedirect: null,   // Para el Requisito 3 al iniciar sesión
+            usuarios: [...MOCK_DATA.usuarios], 
+            ferias: [...MOCK_DATA.ferias], 
+            reservas: [...MOCK_DATA.reservas]
         };
 
         // --- CONTROLADOR PRINCIPAL ---
@@ -1214,11 +1230,29 @@
                 }
             },
 
+            // --- REDIRECCIONES DE ROL (Requisito 3) ---
+            quieroOrganizarAnonimo: () => {
+                state.targetRolRedirect = 'organizador';
+                app.mostrarVista('view-auth');
+            },
+            quieroOrganizarLogged: () => {
+                app.cerrarMenus();
+                app.seleccionarRol('organizador');
+            },
+            iniciarSesionLimpio: () => {
+                state.targetRolRedirect = null;
+                state.targetFeriaRedirect = null;
+                app.mostrarVista('view-auth');
+            },
+
             irAInicio: () => {
-                if(!state.currentUser) { app.mostrarVista('view-landing'); return; }
-                if(!state.currentRole) { app.mostrarVista('view-role-selection'); return; }
-                if(state.currentRole === 'organizador') { app.initOrgFlow(); }
-                if(state.currentRole === 'feriante') { app.initEntFlow(); }
+                if (!state.currentUser) {
+                    state.currentRole = 'feriante';
+                    app.initEntFlow();
+                    return;
+                }
+                if (state.currentRole === 'organizador') { app.initOrgFlow(); }
+                else { app.initEntFlow(); }
             },
 
             toggleAuthForm: (tipo) => {
@@ -1237,16 +1271,28 @@
                 if (user) {
                     state.currentUser = user; 
                     app.mostrarAlerta(`¡Bienvenido/a ${user.name}!`);
-                    
-                    if (user.isOrgSetup) { app.seleccionarRol('organizador'); } 
-                    else if (user.isEntSetup) { app.seleccionarRol('feriante'); } 
-                    else { app.mostrarVista('view-role-selection'); }
 
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const feriaId = urlParams.get('feria');
-                    if (feriaId && (user.isOrgSetup || user.isEntSetup)) {
-                        setTimeout(() => { app.abrirDetalleFeria(parseInt(feriaId)); }, 300);
+                    // REQUISITO 2: Si venía de presionar "Postularse" en una feria siendo anónimo
+                    if (state.targetFeriaRedirect) {
+                        const feriaId = state.targetFeriaRedirect;
+                        state.targetFeriaRedirect = null; 
+                        state.currentRole = 'feriante';
+                        app.actualizarHeader();
+                        app.initEntFlow();
+                        setTimeout(() => { app.abrirDetalleFeria(feriaId); }, 250);
+                        return;
                     }
+
+                    // REQUISITO 3: Si presionó "Quiero organizar" estando deslogueado
+                    if (state.targetRolRedirect === 'organizador') {
+                        state.targetRolRedirect = null;
+                        app.seleccionarRol('organizador');
+                        return;
+                    }
+
+                    if (user.isOrgSetup && !user.isEntSetup) { app.seleccionarRol('organizador'); } 
+                    else { app.seleccionarRol('feriante'); } 
+
                 } else { alert('Credenciales incorrectas'); }
             },
 
@@ -1265,10 +1311,28 @@
                     password: pass, isOrgSetup: false, isEntSetup: false, orgData: null, entData: null
                 };
                 state.usuarios.push(nuevoUser); state.currentUser = nuevoUser;
-                app.actualizarHeader(); app.mostrarAlerta('Cuenta creada exitosamente');
-                
+                app.mostrarAlerta('Cuenta creada exitosamente');
                 document.getElementById('form-registro').reset();
-                app.mostrarVista('view-role-selection');
+
+                // REQUISITO 2: Redirección post-registro si venía de postularse
+                if (state.targetFeriaRedirect) {
+                    const feriaId = state.targetFeriaRedirect;
+                    state.targetFeriaRedirect = null;
+                    state.currentRole = 'feriante';
+                    app.actualizarHeader();
+                    app.initEntFlow();
+                    setTimeout(() => { app.abrirDetalleFeria(feriaId); }, 250);
+                    return;
+                }
+
+                // REQUISITO 3: Si registró cuenta para organizar
+                if (state.targetRolRedirect === 'organizador') {
+                    state.targetRolRedirect = null;
+                    app.seleccionarRol('organizador');
+                    return;
+                }
+
+                app.seleccionarRol('feriante');
             },
 
             togglePasswordVisibilidad: (inputId, botonElemento) => {
@@ -1287,8 +1351,8 @@
             },
 
             logout: () => {
-                state.currentUser = null; state.currentRole = null;
-                app.cerrarMenus(); app.actualizarHeader(); app.mostrarVista('view-landing');
+                state.currentUser = null; state.currentRole = 'feriante';
+                app.cerrarMenus(); app.actualizarHeader(); app.initEntFlow();
             },
 
             seleccionarRol: (rol) => {
@@ -1296,8 +1360,6 @@
                 if (rol === 'organizador') { state.currentUser.isOrgSetup ? app.initOrgFlow() : app.mostrarVista('view-org-onboarding'); } 
                 else { state.currentUser.isEntSetup ? app.initEntFlow() : app.mostrarVista('view-ent-onboarding'); }
             },
-
-            cambiarRol: () => { app.cerrarMenus(); app.mostrarVista('view-role-selection'); },
 
             cropperInstance: null,
             targetImgId: null,
@@ -2073,7 +2135,7 @@
             },
             cerrarAdjuntos: () => { document.getElementById('modal-adjuntos').classList.add('oculto'); },
 
-            // --- FLUJO FERIANTE ---
+            // --- FLUJO FERIANTE (Con validación de anónimos) ---
             switchEntTabs: (tab) => {
                 document.getElementById('tab-ent-descubrir').classList.toggle('active', tab === 'descubrir');
                 document.getElementById('tab-mis-postulaciones').classList.toggle('active', tab === 'postulaciones');
@@ -2081,6 +2143,20 @@
                 document.getElementById('tab-mis-terminadas').classList.toggle('active', tab === 'terminadas');
                 document.getElementById('tab-perfil-ent').classList.toggle('active', tab === 'perfil');
                 
+                // REQUISITO 1: Si no está logueado y toca cualquier pestaña que no sea "descubrir", bloqueamos
+                if (!state.currentUser && tab !== 'descubrir') {
+                    document.getElementById('ent-descubrir-container').classList.add('oculto');
+                    document.getElementById('grid-ferias-postuladas').classList.add('oculto');
+                    document.getElementById('ent-terminadas-container').classList.add('oculto');
+                    document.getElementById('ent-perfil-container').classList.add('oculto');
+                    
+                    document.getElementById('ent-anon-notice').classList.remove('oculto');
+                    return;
+                } else {
+                    document.getElementById('ent-anon-notice').classList.add('oculto');
+                }
+
+                // Flujo normal para usuarios registrados o pestaña Descubrir
                 document.getElementById('ent-descubrir-container').classList.toggle('oculto', tab !== 'descubrir');
                 document.getElementById('grid-ferias-postuladas').classList.toggle('oculto', tab !== 'postulaciones' && tab !== 'reservados');
                 document.getElementById('ent-terminadas-container').classList.toggle('oculto', tab !== 'terminadas');
@@ -2097,7 +2173,6 @@
 
             initEntFlow: () => { app.mostrarVista('view-ent-dashboard'); app.switchEntTabs('descubrir'); },
 
-            // GENERADOR UNIVERSAL DE TARJETAS PARA EL FERIANTE
             generarCardPostulacion: (r, f, esReserva) => {
                 const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
                 const estadoClase = r.estado.replace(/ /g, '-').replace('¡', '').replace('!', '');
@@ -2182,7 +2257,7 @@
                     const matchBusqueda = f.nombre.toLowerCase().includes(filtroTexto) || f.ubicacion.toLowerCase().includes(filtroTexto) || f.rubros.toLowerCase().includes(filtroTexto);
                     const matchFecha = filtroFecha ? f.fecha === filtroFecha : true;
                     const estaActiva = !['cancelada', 'realizada', 'en revisión'].includes((f.estado || '').toLowerCase());
-                    const yaPostulado = state.reservas.some(r => r.idFeria === f.id && r.idEnt === state.currentUser.id);
+                    const yaPostulado = state.currentUser ? state.reservas.some(r => r.idFeria === f.id && r.idEnt === state.currentUser.id) : false;
                     
                     const esPublica = (f.privacidad || 'publica') === 'publica';
 
@@ -2272,7 +2347,8 @@
                 } else if (f.cuposDisponibles <= 0) { 
                     btnHtml = `<button class="btn-primario" disabled style="width:100%; background:grey; padding: 15px;">Cupos Agotados</button>`; 
                 } else if (!state.currentUser) { 
-                    btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem;" onclick="app.cerrarModalFeria(); app.mostrarVista('view-auth')">Iniciá sesión para postularte</button>`; 
+                    // REQUISITO 2: Botón Postularse para usuario anónimo que guarda redirect
+                    btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem; background-color: var(--verde-bosque);" onclick="app.postularseAnonimo(${f.id})">Postularse</button>`; 
                 } else { 
                     btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem; background-color: var(--verde-bosque);" onclick="app.abrirModalPostulacion(${f.id})">Postularse (gratis)</button>`; 
                 }
@@ -2346,12 +2422,11 @@
                 `;
                 containerModal.innerHTML = html; document.getElementById('modal-detalle-feria').classList.remove('oculto');
             },
-            
-            alternarTabsModal: (vista) => {
-                document.getElementById('modal-tab-info').classList.toggle('active', vista === 'info');
-                document.getElementById('modal-tab-listado').classList.toggle('active', vista === 'listado');
-                document.getElementById('modal-sec-info').classList.toggle('oculto', vista !== 'info');
-                document.getElementById('modal-sec-listado').classList.toggle('oculto', vista !== 'listado');
+
+            postularseAnonimo: (idFeria) => {
+                state.targetFeriaRedirect = idFeria;
+                app.cerrarModalFeria();
+                app.mostrarVista('view-auth');
             },
 
             cerrarModalFeria: () => { document.getElementById('modal-detalle-feria').classList.add('oculto'); },
@@ -2480,7 +2555,6 @@
                 document.getElementById('paginacion-terminadas').innerHTML = pagHtml;
             },
 
-            // RENDER 1: PESTAÑA "MIS POSTULACIONES" (Pendientes y A Pagar)
             renderMisPostulaciones: () => {
                 const grid = document.getElementById('grid-ferias-postuladas');
                 const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
@@ -2513,7 +2587,6 @@
                 grid.innerHTML = htmlFinal;
             },
 
-            // RENDER 2: PESTAÑA "STANDS RESERVADOS" (Confirmados)
             renderStandsReservados: () => {
                 const grid = document.getElementById('grid-ferias-postuladas');
                 const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
@@ -2568,7 +2641,6 @@
                 }
             },
 
-            // --- SISTEMA DE REPORTES ---
             abrirModalReporte: (idFeria) => {
                 document.getElementById('reporte-feria-id').value = idFeria;
                 document.getElementById('reporte-motivo').value = '';
@@ -2581,7 +2653,6 @@
                 app.mostrarAlerta('Reporte enviado exitosamente. Revisaremos la feria a la brevedad.');
             },
 
-            // --- CHATBOT ---
             cerrarTooltipBot: (e) => {
                 if(e) e.stopPropagation();
                 const cartel = document.getElementById('bot-welcome-tooltip');
@@ -2686,11 +2757,14 @@
             if (!e.target.closest('.menu-usuario')) { app.cerrarMenus(); } 
         });
         
-        // --- INICIALIZACIÓN Y LECTURA DE URL (COMPARTIR) ---
+        // --- INICIALIZACIÓN POR DEFECTO (REQUISITO 1) ---
         const urlParams = new URLSearchParams(window.location.search);
         const feriaIdCompartida = urlParams.get('feria');
 
-        app.mostrarVista('view-landing'); 
+        // Disparamos el dashboard Feriante directamente
+        state.currentRole = 'feriante';
+        app.actualizarHeader();
+        app.initEntFlow();
 
         if (feriaIdCompartida) {
             setTimeout(() => {
