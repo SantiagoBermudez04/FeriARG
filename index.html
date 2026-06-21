@@ -250,6 +250,47 @@
         }
         .switch-toggle input:checked + .slider-toggle { background-color: var(--verde-bosque); }
         .switch-toggle input:checked + .slider-toggle:before { transform: translateX(24px); }
+
+        /* === CARTELITO INTRO BOT === */
+        .bot-tooltip {
+            position: fixed;
+            bottom: 40px;
+            right: 105px;
+            background-color: var(--blanco);
+            color: var(--carbon);
+            padding: 8px 14px;
+            border-radius: var(--radio);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border: 1px solid var(--verde-menta);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 999;
+            animation: flotar-tooltip 2.5s infinite ease-in-out;
+        }
+        .bot-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -6px;
+            transform: translateY(-50%) rotate(45deg);
+            width: 10px;
+            height: 10px;
+            background-color: var(--blanco);
+            border-top: 1px solid var(--verde-menta);
+            border-right: 1px solid var(--verde-menta);
+        }
+        .bot-tooltip p { margin: 0; font-size: 0.9rem; font-weight: 600; }
+        .bot-tooltip button { 
+            background: none; border: none; color: #999; padding: 0 2px; font-size: 1rem; 
+        }
+        .bot-tooltip button:hover { color: var(--rojo-tomate); transform: scale(1.1); }
+
+        @keyframes flotar-tooltip {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
     </style>
 </head>
 <body>
@@ -356,19 +397,19 @@
             </div>
             
             <div id="org-stats-container" class="stats-container">
-    <div class="stat-box" style="border-left-color: var(--verde-menta);">
-        <h3 id="org-stat-activas">0</h3>
-        <p>Ferias Activas</p>
-    </div>
-    <div class="stat-box" style="border-left-color: #555;">
-        <h3 id="org-stat-realizadas">0</h3>
-        <p>Realizadas</p>
-    </div>
-    <div class="stat-box" style="border-left-color: var(--rojo-tomate);">
-        <h3 id="org-stat-canceladas">0</h3>
-        <p>Canceladas</p>
-    </div>
-</div>
+                <div class="stat-box" style="border-left-color: var(--verde-menta);">
+                    <h3 id="org-stat-activas">0</h3>
+                    <p>Ferias Activas</p>
+                </div>
+                <div class="stat-box" style="border-left-color: #555;">
+                    <h3 id="org-stat-realizadas">0</h3>
+                    <p>Realizadas</p>
+                </div>
+                <div class="stat-box" style="border-left-color: var(--rojo-tomate);">
+                    <h3 id="org-stat-canceladas">0</h3>
+                    <p>Canceladas</p>
+                </div>
+            </div>
 
             <div class="tabs">
                 <button class="tab-btn active" id="tab-ferias-activas" onclick="app.switchOrgTabs('activas')">Ferias Activas</button>
@@ -540,7 +581,7 @@
                     </div>
                     <div style="flex: 1;">
                         <label>Porcentaje de Reserva (%)</label>
-<input type="number" id="nf-porcentaje-reserva" min="0" max="100" value="30" required oninput="if(this.value > 100) this.value = 100; if(this.value < 0) this.value = 0;">
+                        <input type="number" id="nf-porcentaje-reserva" min="0" max="100" value="30" required oninput="if(this.value > 100) this.value = 100; if(this.value < 0) this.value = 0;">
                     </div>
                 </div>
                 <small id="nf-texto-comision" style="color: #666; font-weight: bold; margin-top: -5px; display: block;">FeriARG se lleva 0% de comisión por cargo de servicio: $0</small>
@@ -609,7 +650,7 @@
                 <label>¿Quién soy? (Breve presentación para organizadores)</label>
                 <textarea id="ent-bio" rows="2" maxlength="250" placeholder="Ej: Soy Santiago, estudiante de Administración en la UNLP y pastelero aficionado..."></textarea>
 
-                 <label>Descripción de tus productos</label><textarea id="ent-productos" rows="3" maxlength="300"></textarea>
+                <label>Descripción de tus productos</label><textarea id="ent-productos" rows="3" maxlength="300"></textarea>
                 
                 <label>Perfil de Instagram (URL)</label>
                 <input type="url" id="ent-ig" placeholder="Ej: https://www.instagram.com/leomessi/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram.">
@@ -644,6 +685,7 @@
             <div class="tabs">
                 <button class="tab-btn active" id="tab-ent-descubrir" onclick="app.switchEntTabs('descubrir')">Descubrir Ferias</button>
                 <button class="tab-btn" id="tab-mis-postulaciones" onclick="app.switchEntTabs('postulaciones')">Mis Postulaciones</button>
+                <button class="tab-btn" id="tab-stands-reservados" onclick="app.switchEntTabs('reservados')">Stands Reservados</button>
                 <button class="tab-btn" id="tab-mis-terminadas" onclick="app.switchEntTabs('terminadas')">Ferias Terminadas</button>
                 <button class="tab-btn" id="tab-perfil-ent" onclick="app.switchEntTabs('perfil')">Mi Perfil</button>
             </div>
@@ -838,6 +880,11 @@
                 <button class="btn-primario" onclick="app.confirmarCropper()">Recortar y Guardar</button>
             </div>
         </div>
+    </div>
+
+    <div id="bot-welcome-tooltip" class="bot-tooltip oculto">
+        <p>¿Tienes alguna duda?</p>
+        <button onclick="app.cerrarTooltipBot(event)"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
     <button class="chatbot-btn" onclick="app.toggleChatbot()">
@@ -1058,16 +1105,16 @@
                     }
                     
                     const activas = misFerias.filter(f => !['realizada', 'cancelada'].includes((f.estado || '').toLowerCase())).length;
-const realizadas = misFerias.filter(f => (f.estado || '').toLowerCase() === 'realizada').length;
-const canceladas = misFerias.filter(f => (f.estado || '').toLowerCase() === 'cancelada').length;
+                    const realizadas = misFerias.filter(f => (f.estado || '').toLowerCase() === 'realizada').length;
+                    const canceladas = misFerias.filter(f => (f.estado || '').toLowerCase() === 'cancelada').length;
 
-const elActivas = document.getElementById('org-stat-activas');
-const elRealizadas = document.getElementById('org-stat-realizadas');
-const elCanceladas = document.getElementById('org-stat-canceladas');
+                    const elActivas = document.getElementById('org-stat-activas');
+                    const elRealizadas = document.getElementById('org-stat-realizadas');
+                    const elCanceladas = document.getElementById('org-stat-canceladas');
 
-if(elActivas) elActivas.textContent = activas;
-if(elRealizadas) elRealizadas.textContent = realizadas;
-if(elCanceladas) elCanceladas.textContent = canceladas;
+                    if(elActivas) elActivas.textContent = activas;
+                    if(elRealizadas) elRealizadas.textContent = realizadas;
+                    if(elCanceladas) elCanceladas.textContent = canceladas;
 
                 } else if (state.currentRole === 'feriante') {
                     const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
@@ -1090,7 +1137,7 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
                     aPagarStand.forEach(r => {
                         const f = state.ferias.find(x => x.id === r.idFeria);
                         html += `
-                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('postulaciones'); app.cerrarMenus(); document.getElementById('notif-dropdown').classList.add('oculto'); window.scrollTo(0,0);">
+                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('reservados'); app.cerrarMenus(); document.getElementById('notif-dropdown').classList.add('oculto'); window.scrollTo(0,0);">
                                 <i class="fa-solid fa-clock" style="color:#e0a800;"></i>
                                 <div><strong>Recordatorio de Pago</strong><br>Recuerda abonar el total del stand para ${f.nombre}.</div>
                             </div>
@@ -1100,7 +1147,7 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
                     rechazadas.forEach(r => {
                         const f = state.ferias.find(x => x.id === r.idFeria);
                         html += `
-                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('postulaciones'); app.cerrarMenus(); document.getElementById('notif-dropdown').classList.add('oculto'); window.scrollTo(0,0);">
+                            <div class="notif-item" style="cursor:pointer;" onclick="app.switchEntTabs('terminadas'); app.cerrarMenus(); document.getElementById('notif-dropdown').classList.add('oculto'); window.scrollTo(0,0);">
                                 <i class="fa-solid fa-circle-xmark" style="color:var(--rojo-tomate);"></i>
                                 <div><strong>Reserva Rechazada</strong><br>Tu solicitud para ${f.nombre} fue rechazada o cancelada.</div>
                             </div>
@@ -2030,16 +2077,18 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
             switchEntTabs: (tab) => {
                 document.getElementById('tab-ent-descubrir').classList.toggle('active', tab === 'descubrir');
                 document.getElementById('tab-mis-postulaciones').classList.toggle('active', tab === 'postulaciones');
+                document.getElementById('tab-stands-reservados').classList.toggle('active', tab === 'reservados');
                 document.getElementById('tab-mis-terminadas').classList.toggle('active', tab === 'terminadas');
                 document.getElementById('tab-perfil-ent').classList.toggle('active', tab === 'perfil');
                 
                 document.getElementById('ent-descubrir-container').classList.toggle('oculto', tab !== 'descubrir');
-                document.getElementById('grid-ferias-postuladas').classList.toggle('oculto', tab !== 'postulaciones');
+                document.getElementById('grid-ferias-postuladas').classList.toggle('oculto', tab !== 'postulaciones' && tab !== 'reservados');
                 document.getElementById('ent-terminadas-container').classList.toggle('oculto', tab !== 'terminadas');
                 document.getElementById('ent-perfil-container').classList.toggle('oculto', tab !== 'perfil');
                 
                 if (tab === 'descubrir') { app.renderEntExplorer(); } 
                 else if (tab === 'postulaciones') { app.renderMisPostulaciones(); } 
+                else if (tab === 'reservados') { app.renderStandsReservados(); }
                 else if (tab === 'terminadas') { app.renderEntTerminadas(); }
                 else if (tab === 'perfil') { app.cargarPerfilEnt(); }
                 
@@ -2047,6 +2096,79 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
             },
 
             initEntFlow: () => { app.mostrarVista('view-ent-dashboard'); app.switchEntTabs('descubrir'); },
+
+            // GENERADOR UNIVERSAL DE TARJETAS PARA EL FERIANTE
+            generarCardPostulacion: (r, f, esReserva) => {
+                const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
+                const estadoClase = r.estado.replace(/ /g, '-').replace('¡', '').replace('!', '');
+                
+                const pctRes = f.porcentajeReserva || 30;
+                const montoReserva = Math.round((f.costo * pctRes) / 100);
+                const montoRestanteStand = f.costo - montoReserva;
+
+                let bloqueFechasPago = '';
+                let desdeFormat = '';
+                let hastaFormat = '';
+
+                if (r.pagoDesde && r.pagoHasta) {
+                    desdeFormat = r.pagoDesde.split('-').reverse().join('/');
+                    hastaFormat = r.pagoHasta.split('-').reverse().join('/');
+                }
+
+                if (esReserva && r.pagoDesde && r.pagoHasta && !['¡nos vemos en la feria!', 'cancelada por falta de pago'].includes(r.estado.toLowerCase())) {
+                    bloqueFechasPago = `
+                        <div style="background-color: var(--arena-calido); padding: 10px; border-radius: var(--radio); margin-top: 10px; font-size: 0.85rem; border: 1px dashed var(--verde-bosque);">
+                            <strong><i class="fa-solid fa-clock"></i> Tiempo para pagar el total:</strong><br>
+                            Entre el ${desdeFormat} y el ${hastaFormat}
+                        </div>
+                    `;
+                }
+
+                let actionButtons = `<button class="btn-secundario" style="width: 100%; margin-bottom: 10px;" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles de Feria</button>`;
+
+                if (r.estado.toLowerCase() === 'a pagar') {
+                    actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, 'reservada')">Pagar Reserva ($${montoReserva})</button>`;
+                } else if (r.estado.toLowerCase() === 'reservada') {
+                    const hoy = new Date().toISOString().split('T')[0];
+                    if (r.pagoDesde && r.pagoHasta) {
+                        if (hoy < r.pagoDesde) {
+                            actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: grey;" title="Habilitado desde el ${desdeFormat}">Pago habilitado el ${desdeFormat}</button>`;
+                        } else if (hoy > r.pagoHasta) {
+                            actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: var(--rojo-tomate);" title="Plazo vencido">Plazo de pago vencido</button>`;
+                        } else {
+                            actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand ($${montoRestanteStand})</button>`;
+                        }
+                    } else {
+                        actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand ($${montoRestanteStand})</button>`;
+                    }
+                }
+
+                if (['pendiente', 'a pagar', 'reservada'].includes(r.estado.toLowerCase())) {
+                    actionButtons += `<button class="btn-outline" style="width: 100%; border-color: var(--rojo-tomate); color: var(--rojo-tomate);" onclick="app.cancelarReservaEnt(${r.id})">Dar de baja</button>`;
+                } else {
+                    actionButtons += `<span style="color: gray; text-align: center; width: 100%; display: block;">Operación concluida</span>`;
+                }
+
+                return `
+                    <div class="card">
+                        <img src="${imgSrc}" class="card-img" alt="Feria">
+                        <div class="card-body">
+                            <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                <span class="badge badge-estado-${estadoClase}">${r.estado.toUpperCase()}</span>
+                                <button class="btn-outline btn-chico" style="border: none; color: var(--verde-bosque); padding: 0 5px; cursor: pointer;" onclick="app.compartirFeria(${f.id})" title="Compartir Feria"><i class="fa-solid fa-share-nodes"></i></button>
+                            </div>
+                            <div class="card-title">${f.nombre}</div>
+                            <div class="card-info mt-2"><i class="fa-regular fa-calendar"></i> ${f.fecha}</div>
+                            <div class="card-info"><i class="fa-solid fa-location-dot"></i> ${f.ubicacion}</div>
+                            <div class="card-info mt-2" style="font-weight:bold; color: var(--carbon);">💰 Costo Total: $${f.costo}</div>
+                            ${bloqueFechasPago}
+                        </div>
+                        <div class="card-footer" style="padding: 15px; border-top: 1px solid var(--borde); justify-content: center; align-items: stretch;">
+                            ${actionButtons}
+                        </div>
+                    </div>
+                `;
+            },
 
             renderEntExplorer: () => {
                 const grid = document.getElementById('grid-ferias-explorer');
@@ -2266,7 +2388,12 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
                     if(res) {
                         res.estado = nuevoEstado;
                         app.mostrarAlerta('¡Pago procesado y reserva actualizada!');
-                        app.renderMisPostulaciones();
+                        
+                        if (nuevoEstado === 'reservada' || nuevoEstado === '¡nos vemos en la feria!') {
+                            app.switchEntTabs('reservados');
+                        } else {
+                            app.renderMisPostulaciones();
+                        }
                         app.actualizarNotificaciones();
                     }
                 }
@@ -2353,116 +2480,69 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
                 document.getElementById('paginacion-terminadas').innerHTML = pagHtml;
             },
 
+            // RENDER 1: PESTAÑA "MIS POSTULACIONES" (Pendientes y A Pagar)
             renderMisPostulaciones: () => {
                 const grid = document.getElementById('grid-ferias-postuladas');
                 const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
                 
-                let reservasActivas = misReservas.filter(r => {
+                let preReservas = misReservas.filter(r => {
                     const feria = state.ferias.find(f => f.id === r.idFeria);
                     if (!feria) return false;
                     const fTerminada = ['realizada', 'cancelada'].includes(feria.estado.toLowerCase());
                     const rMuerta = ['rechazada', 'cancelada por organizador', 'cancelada por falta de pago'].includes(r.estado.toLowerCase());
-                    return !fTerminada && !rMuerta;
+                    const esPre = ['pendiente', 'a pagar'].includes(r.estado.toLowerCase());
+                    return !fTerminada && !rMuerta && esPre;
                 });
 
-                reservasActivas.sort((a, b) => {
+                preReservas.sort((a, b) => {
                     const fA = state.ferias.find(f => f.id === a.idFeria);
                     const fB = state.ferias.find(f => f.id === b.idFeria);
                     return new Date(fA.fecha) - new Date(fB.fecha);
                 });
 
-                if(reservasActivas.length === 0){
-                    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">No tienes postulaciones ni reservas activas. ¡Explora el buscador!</p>`;
+                if(preReservas.length === 0){
+                    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">No tienes postulaciones pendientes de revisión ni reservas a pagar.</p>`;
                     return;
                 }
 
-                const preReservas = reservasActivas.filter(r => ['pendiente', 'a pagar'].includes(r.estado.toLowerCase()));
-                const reservadas = reservasActivas.filter(r => ['reservada', '¡nos vemos en la feria!', 'pago total realizado'].includes(r.estado.toLowerCase()));
+                let htmlFinal = '';
+                preReservas.forEach(r => {
+                    const f = state.ferias.find(x => x.id === r.idFeria);
+                    if(f) htmlFinal += app.generarCardPostulacion(r, f, false);
+                });
+                grid.innerHTML = htmlFinal;
+            },
 
-                const generarCardPostulacion = (r, f, esReserva) => {
-                    const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
-                    const estadoClase = r.estado.replace(/ /g, '-').replace('¡', '').replace('!', '');
-                    
-                    const pctRes = f.porcentajeReserva || 30;
-                    const montoReserva = Math.round((f.costo * pctRes) / 100);
-                    const montoRestanteStand = f.costo - montoReserva;
+            // RENDER 2: PESTAÑA "STANDS RESERVADOS" (Confirmados)
+            renderStandsReservados: () => {
+                const grid = document.getElementById('grid-ferias-postuladas');
+                const misReservas = state.reservas.filter(r => r.idEnt === state.currentUser.id);
+                
+                let confirmadas = misReservas.filter(r => {
+                    const feria = state.ferias.find(f => f.id === r.idFeria);
+                    if (!feria) return false;
+                    const fTerminada = ['realizada', 'cancelada'].includes(feria.estado.toLowerCase());
+                    const rMuerta = ['rechazada', 'cancelada por organizador', 'cancelada por falta de pago'].includes(r.estado.toLowerCase());
+                    const esConfirmada = ['reservada', '¡nos vemos en la feria!', 'pago total realizado'].includes(r.estado.toLowerCase());
+                    return !fTerminada && !rMuerta && esConfirmada;
+                });
 
-                    let bloqueFechasPago = '';
-                    let desdeFormat = '';
-                    let hastaFormat = '';
+                confirmadas.sort((a, b) => {
+                    const fA = state.ferias.find(f => f.id === a.idFeria);
+                    const fB = state.ferias.find(f => f.id === b.idFeria);
+                    return new Date(fA.fecha) - new Date(fB.fecha);
+                });
 
-                    if (r.pagoDesde && r.pagoHasta) {
-                        desdeFormat = r.pagoDesde.split('-').reverse().join('/');
-                        hastaFormat = r.pagoHasta.split('-').reverse().join('/');
-                    }
-
-                    if (esReserva && r.pagoDesde && r.pagoHasta && !['¡nos vemos en la feria!', 'cancelada por falta de pago'].includes(r.estado.toLowerCase())) {
-                        bloqueFechasPago = `
-                            <div style="background-color: var(--arena-calido); padding: 10px; border-radius: var(--radio); margin-top: 10px; font-size: 0.85rem; border: 1px dashed var(--verde-bosque);">
-                                <strong><i class="fa-solid fa-clock"></i> Tiempo para pagar el total:</strong><br>
-                                Entre el ${desdeFormat} y el ${hastaFormat}
-                            </div>
-                        `;
-                    }
-
-                    let actionButtons = `<button class="btn-secundario" style="width: 100%; margin-bottom: 10px;" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles de Feria</button>`;
-
-                    if (r.estado.toLowerCase() === 'a pagar') {
-                        actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, 'reservada')">Pagar Reserva ($${montoReserva})</button>`;
-                    } else if (r.estado.toLowerCase() === 'reservada') {
-                        const hoy = new Date().toISOString().split('T')[0];
-                        if (r.pagoDesde && r.pagoHasta) {
-                            if (hoy < r.pagoDesde) {
-                                actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: grey;" title="Habilitado desde el ${desdeFormat}">Pago habilitado el ${desdeFormat}</button>`;
-                            } else if (hoy > r.pagoHasta) {
-                                actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: var(--rojo-tomate);" title="Plazo vencido">Plazo de pago vencido</button>`;
-                            } else {
-                                actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand ($${montoRestanteStand})</button>`;
-                            }
-                        } else {
-                            actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand ($${montoRestanteStand})</button>`;
-                        }
-                    }
-
-                    if (['pendiente', 'a pagar', 'reservada'].includes(r.estado.toLowerCase())) {
-                        actionButtons += `<button class="btn-outline" style="width: 100%; border-color: var(--rojo-tomate); color: var(--rojo-tomate);" onclick="app.cancelarReservaEnt(${r.id})">Dar de baja</button>`;
-                    } else {
-                        actionButtons += `<span style="color: gray; text-align: center; width: 100%; display: block;">Operación concluida</span>`;
-                    }
-
-                    return `
-                        <div class="card">
-                            <img src="${imgSrc}" class="card-img" alt="Feria">
-                            <div class="card-body">
-                                <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                                    <span class="badge badge-estado-${estadoClase}">${r.estado.toUpperCase()}</span>
-                                    <button class="btn-outline btn-chico" style="border: none; color: var(--verde-bosque); padding: 0 5px; cursor: pointer;" onclick="app.compartirFeria(${f.id})" title="Compartir Feria"><i class="fa-solid fa-share-nodes"></i></button>
-                                </div>
-                                <div class="card-title">${f.nombre}</div>
-                                <div class="card-info mt-2"><i class="fa-regular fa-calendar"></i> ${f.fecha}</div>
-                                <div class="card-info"><i class="fa-solid fa-location-dot"></i> ${f.ubicacion}</div>
-                                <div class="card-info mt-2" style="font-weight:bold; color: var(--carbon);">💰 Costo Total: $${f.costo}</div>
-                                ${bloqueFechasPago}
-                            </div>
-                            <div class="card-footer" style="padding: 15px; border-top: 1px solid var(--borde); justify-content: center; align-items: stretch;">
-                                ${actionButtons}
-                            </div>
-                        </div>
-                    `;
-                };
+                if(confirmadas.length === 0){
+                    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">Aún no tienes stands confirmados. Cuando abones una reserva, aparecerá aquí.</p>`;
+                    return;
+                }
 
                 let htmlFinal = '';
-
-                if(preReservas.length > 0) {
-                    htmlFinal += `<h3 style="grid-column: 1/-1; border-bottom: 2px solid var(--verde-menta); padding-bottom: 5px;">Postulaciones y Resultados</h3>`;
-                    preReservas.forEach(r => { const f = state.ferias.find(x => x.id === r.idFeria); if(f) htmlFinal += generarCardPostulacion(r, f, false); });
-                }
-
-                if(reservadas.length > 0) {
-                    htmlFinal += `<h3 style="grid-column: 1/-1; border-bottom: 2px solid var(--verde-menta); padding-bottom: 5px; margin-top: 20px;">Stands Reservados Confirmados</h3>`;
-                    reservadas.forEach(r => { const f = state.ferias.find(x => x.id === r.idFeria); if(f) htmlFinal += generarCardPostulacion(r, f, true); });
-                }
-
+                confirmadas.forEach(r => {
+                    const f = state.ferias.find(x => x.id === r.idFeria);
+                    if(f) htmlFinal += app.generarCardPostulacion(r, f, true);
+                });
                 grid.innerHTML = htmlFinal;
             },
 
@@ -2477,7 +2557,12 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
                         }
                         state.reservas.splice(index, 1); 
                         app.mostrarAlerta('Baja procesada con éxito'); 
-                        app.renderMisPostulaciones();
+                        
+                        if (document.getElementById('tab-mis-postulaciones').classList.contains('active')) {
+                            app.renderMisPostulaciones();
+                        } else if (document.getElementById('tab-stands-reservados').classList.contains('active')) {
+                            app.renderStandsReservados();
+                        }
                         app.actualizarNotificaciones();
                     }
                 }
@@ -2497,7 +2582,14 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
             },
 
             // --- CHATBOT ---
+            cerrarTooltipBot: (e) => {
+                if(e) e.stopPropagation();
+                const cartel = document.getElementById('bot-welcome-tooltip');
+                if(cartel) cartel.classList.add('oculto');
+                localStorage.setItem('feriarg_duda_visto', 'true');
+            },
             toggleChatbot: () => {
+                app.cerrarTooltipBot();
                 const panel = document.getElementById('chatbot-panel'); panel.classList.toggle('oculto');
                 if(!panel.classList.contains('oculto')) { app.scrollToBottomChat(); }
             },
@@ -2605,6 +2697,13 @@ if(elCanceladas) elCanceladas.textContent = canceladas;
                 app.abrirDetalleFeria(parseInt(feriaIdCompartida));
             }, 100);
         }
+        
+        setTimeout(() => {
+            if (!localStorage.getItem('feriarg_duda_visto')) {
+                const cartel = document.getElementById('bot-welcome-tooltip');
+                if(cartel) cartel.classList.remove('oculto');
+            }
+        }, 1500);
     </script>
 </body>
 </html>
