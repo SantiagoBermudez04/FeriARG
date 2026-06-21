@@ -2136,6 +2136,7 @@
             cerrarAdjuntos: () => { document.getElementById('modal-adjuntos').classList.add('oculto'); },
 
             // --- FLUJO FERIANTE (Con validación de anónimos) ---
+            // --- FLUJO FERIANTE (Con validación de anónimos) ---
             switchEntTabs: (tab) => {
                 document.getElementById('tab-ent-descubrir').classList.toggle('active', tab === 'descubrir');
                 document.getElementById('tab-mis-postulaciones').classList.toggle('active', tab === 'postulaciones');
@@ -2143,6 +2144,12 @@
                 document.getElementById('tab-mis-terminadas').classList.toggle('active', tab === 'terminadas');
                 document.getElementById('tab-perfil-ent').classList.toggle('active', tab === 'perfil');
                 
+                // NUEVO: Oculta las 3 cajas de métricas si el usuario no está logueado
+                const contenedorStats = document.getElementById('ent-stats-container');
+                if (contenedorStats) {
+                    contenedorStats.classList.toggle('oculto', !state.currentUser);
+                }
+
                 // REQUISITO 1: Si no está logueado y toca cualquier pestaña que no sea "descubrir", bloqueamos
                 if (!state.currentUser && tab !== 'descubrir') {
                     document.getElementById('ent-descubrir-container').classList.add('oculto');
