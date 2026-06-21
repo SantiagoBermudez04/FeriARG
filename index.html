@@ -439,14 +439,28 @@
                         <img id="img-preview-org" class="perfil-img-preview" src="https://via.placeholder.com/120?text=Logo">
                         <input type="file" id="upload-org" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-org')">
                     </div>
-                    <label>Nombre de la Organización/Feria</label>
+                    
+                    <label>Nombre de la Organización / Feria</label>
                     <input type="text" id="edit-org-nombre" maxlength="50" required>
+
+                    <label>Razón Social o Nombre del Titular</label>
+                    <input type="text" id="edit-org-razon" maxlength="80" required>
+
+                    <label>DNI del responsable</label>
+                    <input type="text" id="edit-org-dni" required minlength="7" maxlength="8" pattern="\d{7,8}" title="Debe contener 7 u 8 números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
                     <label>CUIT (Solo números)</label>
-                    <input type="text" id="edit-org-cuit" required minlength="11" maxlength="11" pattern="\d{11}" title="Debe contener exactamente 11 números, sin guiones." oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <input type="text" id="edit-org-cuit" required minlength="11" maxlength="11" pattern="\d{11}" title="Debe contener exactamente 11 números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
+                    <label>CBU / CVU (22 dígitos)</label>
+                    <input type="text" id="edit-org-cbu" required minlength="22" maxlength="22" pattern="\d{22}" title="Debe contener exactamente 22 números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
                     <label>Perfil de Instagram (URL)</label>
                     <input type="url" id="edit-org-ig" placeholder="Ej: https://www.instagram.com/tuferia/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram">
+                    
                     <label>Perfil de Facebook (URL)</label>
                     <input type="url" id="edit-org-fb" placeholder="Ej: https://www.facebook.com/tuferia/" pattern="https?://.*facebook\.com/.*" title="Debe ser un link válido de Facebook">
+                    
                     <button type="submit" class="btn-primario mt-2">Guardar Cambios</button>
                 </form>
             </div>
@@ -618,13 +632,28 @@
             <form onsubmit="app.guardarOnboardingOrg(event)">
                 <h2 class="text-center">Perfil de Organizador</h2>
                 <p class="text-center mb-2">Configurá los datos iniciales de tu organización</p>
-                <label>Nombre de la Organización</label><input type="text" id="org-nombre" maxlength="50" required>
+                
+                <label>Nombre de la Organización / Feria</label>
+                <input type="text" id="org-nombre" maxlength="50" required placeholder="Ej: Feria Meridiano">
+
+                <label>Razón Social o Nombre del Titular</label>
+                <input type="text" id="org-razon" maxlength="80" required placeholder="Nombre legal para facturación">
+
+                <label>DNI del responsable (Solo números)</label>
+                <input type="text" id="org-dni" required minlength="7" maxlength="8" pattern="\d{7,8}" title="Debe contener 7 u 8 números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
                 <label>CUIT (Solo números)</label>
-                <input type="text" id="org-cuit" required minlength="11" maxlength="11" pattern="\d{11}" title="Debe contener exactamente 11 números, sin guiones." oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <input type="text" id="org-cuit" required minlength="11" maxlength="11" pattern="\d{11}" title="Debe contener exactamente 11 números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
+                <label>CBU / CVU (22 dígitos)</label>
+                <input type="text" id="org-cbu" required minlength="22" maxlength="22" pattern="\d{22}" title="Debe contener exactamente 22 números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Para recibir el dinero de los stands">
+
                 <label>Perfil de Instagram (URL)</label>
                 <input type="url" id="org-ig" placeholder="Ej: https://www.instagram.com/tuferia/" pattern="https?://.*instagram\.com/.*" title="Debe ser un link válido de Instagram">
+                
                 <label>Perfil de Facebook (URL)</label>
                 <input type="url" id="org-fb" placeholder="Ej: https://www.facebook.com/tuferia/" pattern="https?://.*facebook\.com/.*" title="Debe ser un link válido de Facebook">
+                
                 <button type="submit" class="btn-primario mt-2">Guardar y Empezar</button>
             </form>
         </section>
@@ -1458,7 +1487,6 @@
                             <p class="badge" style="background: var(--verde-bosque); color: white;">Organizador</p>
                             <div style="background: var(--arena-calido); width: 100%; padding: 15px; border-radius: var(--radio); text-align: left; margin-top: 10px;">
                                 <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-user" style="color: var(--verde-bosque);"></i> Responsable:</strong> ${u.name}</p>
-                                <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-file-invoice" style="color: var(--verde-bosque);"></i> CUIT:</strong> ${u.orgData.cuit || 'No especificado'}</p>
                                 <p style="margin-bottom: 8px; word-break: break-all;"><strong><i class="fa-brands fa-instagram" style="color: var(--verde-bosque);"></i> Instagram:</strong> <br>${igHtml}</p>
                                 <p style="word-break: break-all;"><strong><i class="fa-brands fa-facebook" style="color: var(--verde-bosque);"></i> Facebook:</strong> <br>${fbHtml}</p>
                             </div>
@@ -1475,7 +1503,10 @@
                 e.preventDefault();
                 state.currentUser.orgData = { 
                     name: document.getElementById('org-nombre').value, 
+                    razonSocial: document.getElementById('org-razon').value,
+                    dni: document.getElementById('org-dni').value,
                     cuit: document.getElementById('org-cuit').value, 
+                    cbu: document.getElementById('org-cbu').value,
                     ig: document.getElementById('org-ig').value, 
                     fb: document.getElementById('org-fb').value, 
                     avatar: '' 
@@ -1508,7 +1539,10 @@
                 const data = state.currentUser.orgData;
                 if(data) {
                     document.getElementById('edit-org-nombre').value = data.name || ''; 
+                    document.getElementById('edit-org-razon').value = data.razonSocial || '';
+                    document.getElementById('edit-org-dni').value = data.dni || '';
                     document.getElementById('edit-org-cuit').value = data.cuit || '';
+                    document.getElementById('edit-org-cbu').value = data.cbu || '';
                     document.getElementById('edit-org-ig').value = data.ig || ''; 
                     document.getElementById('edit-org-fb').value = data.fb || ''; 
                     if(data.avatar) document.getElementById('img-preview-org').src = data.avatar;
@@ -1519,7 +1553,10 @@
                 e.preventDefault();
                 state.currentUser.orgData = { 
                     name: document.getElementById('edit-org-nombre').value, 
+                    razonSocial: document.getElementById('edit-org-razon').value,
+                    dni: document.getElementById('edit-org-dni').value,
                     cuit: document.getElementById('edit-org-cuit').value, 
+                    cbu: document.getElementById('edit-org-cbu').value,
                     ig: document.getElementById('edit-org-ig').value, 
                     fb: document.getElementById('edit-org-fb').value, 
                     avatar: document.getElementById('img-preview-org').src 
@@ -2292,6 +2329,9 @@
                     const pctRes = f.porcentajeReserva || 30;
                     const valRes = Math.round((f.costo * pctRes) / 100);
 
+                    // NUEVO: El botón de la banderita solo existe si hay un usuario logueado
+                    const btnReporte = state.currentUser ? `<button class="btn-outline btn-chico" style="border: none; color: var(--rojo-tomate); padding: 0 5px; cursor: pointer;" onclick="app.abrirModalReporte(${f.id})" title="Reportar feria"><i class="fa-solid fa-flag"></i></button>` : '';
+
                     grid.innerHTML += `
                         <div class="card">
                             <img src="${imgSrc}" class="card-img" alt="Feria">
@@ -2301,7 +2341,7 @@
                                     <div style="display:flex; gap: 5px; align-items: center;">
                                         ${badgeCupo}
                                         <button class="btn-outline btn-chico" style="border: none; color: var(--verde-bosque); padding: 0 5px; cursor: pointer;" onclick="app.compartirFeria(${f.id})" title="Compartir Feria"><i class="fa-solid fa-share-nodes"></i></button>
-                                        <button class="btn-outline btn-chico" style="border: none; color: var(--rojo-tomate); padding: 0 5px; cursor: pointer;" onclick="app.abrirModalReporte(${f.id})" title="Reportar feria"><i class="fa-solid fa-flag"></i></button>
+                                        ${btnReporte}
                                     </div>
                                 </div>
                                 <div class="card-title">${f.nombre}</div>
@@ -2648,16 +2688,16 @@
                 }
             },
 
+            // --- SISTEMA DE REPORTES ---
             abrirModalReporte: (idFeria) => {
+                if (!state.currentUser) {
+                    app.mostrarAlerta('Debes iniciar sesión para poder reportar una feria.');
+                    return;
+                }
                 document.getElementById('reporte-feria-id').value = idFeria;
                 document.getElementById('reporte-motivo').value = '';
                 document.getElementById('reporte-detalle').value = '';
                 document.getElementById('modal-reporte').classList.remove('oculto');
-            },
-            cerrarModalReporte: () => { document.getElementById('modal-reporte').classList.add('oculto'); },
-            enviarReporte: (e) => {
-                e.preventDefault(); app.cerrarModalReporte();
-                app.mostrarAlerta('Reporte enviado exitosamente. Revisaremos la feria a la brevedad.');
             },
 
             cerrarTooltipBot: (e) => {
