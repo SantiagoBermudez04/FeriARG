@@ -106,6 +106,7 @@
         .badge-estado-nos-vemos-en-la-feria { background-color: var(--verde-bosque); color: var(--blanco); }
         .badge-estado-cancelada-por-falta-de-pago { background-color: var(--rojo-tomate); color: var(--blanco); }
         .badge-estado-pago-total-realizado { background-color: var(--verde-bosque); color: var(--blanco); }
+        .badge-estado-pago-vencido { background-color: var(--rojo-tomate); color: var(--blanco); }
 
         /* === TABLAS Y PESTAÑAS === */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--borde); flex-wrap: wrap; }
@@ -290,7 +291,21 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
         }
-
+ 
+        /* === PARCHE DE BOTONES SUPERIORES EXCLUSIVO PARA CELULAR === */
+        @media (max-width: 768px) {
+            #nav-login {
+                flex-direction: column !important;
+                gap: 6px !important;
+                align-items: stretch !important;
+            }
+            #nav-login button {
+                padding: 6px 10px !important;
+                font-size: 0.8rem !important;
+                white-space: normal !important;
+                width: 100% !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -301,7 +316,7 @@
         </div>
         
         <div id="nav-login" style="display: flex; gap: 12px; align-items: center;">
-            <button class="btn-outline btn-chico" style="color: var(--blanco); border-color: var(--blanco);" onclick="app.quieroOrganizarAnonimo()">Quiero organizar una feria</button>
+            <button class="btn-outline btn-chico" style="color: var(--blanco); border-color: var(--blanco);" onclick="app.quieroOrganizarAnonimo()">Quiero organizar / gestionar una feria</button>
             <button class="btn-primario btn-chico" onclick="app.iniciarSesionLimpio()">Iniciar Sesión / Registrarse</button>
         </div>
 
@@ -320,7 +335,7 @@
             
             <button class="menu-dots" onclick="app.toggleMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
             <div id="dropdown-menu" class="dropdown oculto">
-                <button onclick="app.quieroOrganizarLogged()"><i class="fa-solid fa-bullhorn"></i> Quiero organizar una feria</button>
+                <button id="btn-switch-role" onclick="app.quieroOrganizarLogged()"><i class="fa-solid fa-bullhorn"></i> Quiero organizar / gestioanr una feria</button>
                 <button onclick="app.logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión</button>
             </div>
         </div>
@@ -696,7 +711,7 @@
 
         <section id="view-ent-dashboard">
             <div class="view-header">
-                <h2>Mi Panel Feriante</h2>
+                <h2 id="titulo-panel-ent">Mi Panel Feriante</h2>
             </div>
             
             <div id="ent-stats-container" class="stats-container">
@@ -710,7 +725,7 @@
                 </div>
                 <div class="stat-box" style="border-left-color: #555;">
                     <h3 id="ent-stat-term">0</h3>
-                    <p>Finalizadas</p>
+                    <p>Realizadas</p>
                 </div>
             </div>
 
@@ -720,7 +735,7 @@
                 <button class="tab-btn" id="tab-ent-descubrir" onclick="app.switchEntTabs('descubrir')">Descubrir Ferias</button>
                 <button class="tab-btn" id="tab-mis-postulaciones" onclick="app.switchEntTabs('postulaciones')">Mis Postulaciones</button>
                 <button class="tab-btn" id="tab-stands-reservados" onclick="app.switchEntTabs('reservados')">Stands Reservados</button>
-                <button class="tab-btn" id="tab-mis-terminadas" onclick="app.switchEntTabs('terminadas')">Ferias Terminadas</button>
+                <button class="tab-btn" id="tab-mis-terminadas" onclick="app.switchEntTabs('terminadas')">Historial Ferias</button>
                 <button class="tab-btn" id="tab-perfil-ent" onclick="app.switchEntTabs('perfil')">Mi Perfil</button>
             </div>
 
@@ -768,8 +783,8 @@
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
                     <input type="date" class="filtros" id="filtro-fecha-terminadas" onchange="app.renderEntTerminadas()" style="width: auto;">
                     <select class="filtros" id="filtro-estado-terminadas-ent" onchange="app.renderEntTerminadas()" style="width: auto;">
-                        <option value="todos">Todas (Finalizadas y Canceladas)</option>
-                        <option value="finalizada">Solo Finalizadas</option>
+                        <option value="todos">Todas (Realizadas y Canceladas)</option>
+                        <option value="realizada">Solo Realizadas</option>
                         <option value="cancelada">Solo Canceladas / Rechazadas</option>
                     </select>
                 </div>
@@ -1228,7 +1243,7 @@
 
                     let statPostulaciones = 0;
                     let statReservadas = 0;
-                    let statFinalizadasReal = 0;
+                    let statRealizadasReal = 0;
 
                     misReservas.forEach(r => {
                         const f = state.ferias.find(x => x.id === r.idFeria);
@@ -1241,7 +1256,7 @@
                         const ferianteEstuvoConfirmado = ['reservada', '¡nos vemos en la feria!', 'pago total realizado'].includes(estRes);
 
                         if (esFeriaConcluida && ferianteEstuvoConfirmado) {
-                            statFinalizadasReal++;
+                            statRealizadasReal++;
                         } else if (!esFeriaConcluida) {
                             if (['pendiente', 'a pagar'].includes(estRes)) {
                                 statPostulaciones++;
@@ -1256,7 +1271,7 @@
                     const elTerm = document.getElementById('ent-stat-term');
                     if(elPre) elPre.textContent = statPostulaciones;
                     if(elConf) elConf.textContent = statReservadas;
-                    if(elTerm) elTerm.textContent = statFinalizadasReal;
+                    if(elTerm) elTerm.textContent = statRealizadasReal;
                 }
 
                 if (count > 0) {
@@ -1275,10 +1290,25 @@
                     document.getElementById('nav-user').classList.remove('oculto');
                     document.getElementById('user-greeting').textContent = `Hola, ${state.currentUser.name.split(' ')[0]}`;
                     const badge = document.getElementById('user-role-badge');
+                    
                     if (state.currentRole) {
                         badge.textContent = state.currentRole === 'organizador' ? 'Organizador' : 'Feriante';
                         badge.classList.remove('oculto');
                         app.actualizarNotificaciones();
+
+                        // --- NUEVO: BOTÓN DE CAMBIO DE ROL DINÁMICO ---
+                        const btnSwitch = document.getElementById('btn-switch-role');
+                        if (btnSwitch) {
+                            if (state.currentRole === 'organizador') {
+                                btnSwitch.innerHTML = `<i class="fa-solid fa-store"></i> Cambiar a vista Feriante`;
+                                btnSwitch.onclick = () => { app.cerrarMenus(); app.seleccionarRol('feriante'); };
+                            } else {
+                                btnSwitch.innerHTML = `<i class="fa-solid fa-bullhorn"></i> Cambiar a vista Organizador`;
+                                btnSwitch.onclick = () => { app.cerrarMenus(); app.seleccionarRol('organizador'); };
+                            }
+                        }
+                        // ----------------------------------------------
+
                     } else { badge.classList.add('oculto'); }
                 } else {
                     document.getElementById('nav-login').classList.remove('oculto');
@@ -1854,7 +1884,7 @@
 
                 // --- RENDERIZAR ACEPTADOS ---
                 const containerFeriantes = document.getElementById('gestion-feriantes-aceptados');
-                const aceptados = state.reservas.filter(r => r.idFeria === f.id && ['a pagar', 'reservada', 'pago total realizado', '¡nos vemos en la feria!'].includes(r.estado.toLowerCase()));
+                const aceptados = state.reservas.filter(r => r.idFeria === f.id && ['a pagar', 'reservada', 'pago vencido', 'pago total realizado', '¡nos vemos en la feria!'].includes(r.estado.toLowerCase()));
                 
                 const comisionPorStand = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
                 const standNeto = f.costo - comisionPorStand; 
@@ -1866,16 +1896,21 @@
                 const totalComisionFeriarg = aceptados.length * comisionPorStand;
 
                 const esFeriaRealizada = ['realizada'].includes((f.estado || '').toLowerCase());
+                const hoy = new Date().toISOString().split('T')[0]; // Capturamos 'hoy'
 
                 aceptados.forEach(r => {
+                    // LÓGICA DE VENCIMIENTO AUTOMÁTICO:
+                    if (r.estado.toLowerCase() === 'reservada' && r.pagoHasta && r.pagoHasta < hoy) {
+                        r.estado = 'pago vencido';
+                    }
+
                     const est = r.estado.toLowerCase();
 
                     if (est === 'a pagar') {
                         dineroEspera += standNeto;
-                    } else if (est === 'reservada') {
+                    } else if (est === 'reservada' || est === 'pago vencido') { // <-- El dinero vencido sigue "en espera"
                         const netoReserva = Math.round((standNeto * pctRes) / 100);
                         const netoRestante = standNeto - netoReserva;
-                        
                         dineroEspera += netoRestante;
                         
                         if (esFeriaRealizada) {
@@ -1884,11 +1919,8 @@
                             dineroRetenido += netoReserva;
                         }
                     } else if (est === 'pago total realizado' || est === '¡nos vemos en la feria!') {
-                        if (esFeriaRealizada) {
-                            dineroCobrado += standNeto;
-                        } else {
-                            dineroRetenido += standNeto;
-                        }
+                        if (esFeriaRealizada) dineroCobrado += standNeto;
+                        else dineroRetenido += standNeto;
                     }
                 });
 
@@ -1931,15 +1963,26 @@
                         const estadoClase = r.estado.replace(/ /g, '-').replace('¡', '').replace('!', '');
                         
                         let btnBaja = '';
+                        let btnExtender = ''; 
+
                         if(!esInactiva) {
                             btnBaja = `<button class="btn-outline btn-chico" style="color:var(--rojo-tomate); border-color:var(--rojo-tomate);" onclick="app.abrirModalBajaFeriante(${r.id})" title="Dar de baja"><i class="fa-solid fa-user-minus"></i> Baja</button>`;
+                            
+                            if (r.estado.toLowerCase() === 'pago vencido') {
+                                // Miramos si el sello de la reserva coincide con el día de hoy
+                                if (r.ultimaExtension === hoy) {
+                                    btnExtender = `<button class="btn-outline btn-chico" disabled style="color:gray; border-color:#ccc; margin-left:5px; cursor:not-allowed;" title="Ya le diste un día extra hoy"><i class="fa-solid fa-check-double"></i> +1 dado hoy</button>`;
+                                } else {
+                                    btnExtender = `<button class="btn-outline btn-chico" style="color:var(--verde-bosque); border-color:var(--verde-bosque); margin-left:5px;" onclick="app.extenderPlazoPago(${r.id})" title="Otorgar 24hs más"><i class="fa-solid fa-calendar-plus"></i> +1 Día</button>`;
+                                }
+                            }
                         }
 
                         htmlAceptados += `<tr>
                             <td><strong>${ent.name}</strong> <br> <span style="font-size:0.8rem; cursor:pointer; color:var(--rojo-tomate);" onclick="app.abrirPerfilUsuario(${ent.id})">Ver Perfil</span></td>
                             <td>${rubro}</td>
                             <td><span class="badge badge-estado-${estadoClase}">${estadoVisual}</span></td>
-                            <td>${btnBaja}</td>
+                            <td>${btnBaja} ${btnExtender}</td>
                         </tr>`;
                     });
                 }
@@ -2211,6 +2254,11 @@
                 const contenedorStats = document.getElementById('ent-stats-container');
                 if (contenedorStats) {
                     contenedorStats.classList.toggle('oculto', !state.currentUser);
+                }
+                
+                const tituloPanel = document.getElementById('titulo-panel-ent');
+                if (tituloPanel) {
+                    tituloPanel.textContent = state.currentUser ? "Mi Panel Feriante" : "Explorar Ferias";
                 }
 
                 // REQUISITO 1 modificado: Los anónimos tienen permiso para ver "descubrir" y "quienes"
@@ -2545,6 +2593,31 @@
                         }
                         app.actualizarNotificaciones();
                     }
+                }
+            },
+
+            extenderPlazoPago: (idReserva) => {
+                const res = state.reservas.find(r => r.id === idReserva);
+                const hoy = new Date().toISOString().split('T')[0]; // Capturamos 'hoy'
+
+                if (res && res.pagoHasta) {
+                    // VALIDACIÓN: ¿Ya se lo dimos hoy?
+                    if (res.ultimaExtension === hoy) {
+                        alert("Límite diario: Ya le otorgaste un día extra a este feriante en el día de hoy.");
+                        return;
+                    }
+
+                    const fechaObj = new Date(res.pagoHasta + 'T00:00:00');
+                    fechaObj.setDate(fechaObj.getDate() + 1);
+                    const nuevoHasta = fechaObj.toISOString().split('T')[0];
+
+                    res.pagoHasta = nuevoHasta;
+                    res.estado = 'reservada'; 
+                    res.ultimaExtension = hoy; // <--- GUARDAMOS EL SELLO DE HOY
+
+                    app.mostrarAlerta(`Plazo extendido un día más (Vence: ${nuevoHasta.split('-').reverse().join('/')})`);
+                    app.abrirGestionFeria(res.idFeria);
+                    app.actualizarNotificaciones();
                 }
             },
 
