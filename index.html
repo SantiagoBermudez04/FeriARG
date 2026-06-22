@@ -352,6 +352,12 @@
         </section>
 
         <section id="view-auth" class="oculto">
+            <div style="max-width: 400px; margin: 0 auto 15px auto;">
+                <button type="button" class="btn-outline btn-chico" style="width: 100%;" onclick="app.irAInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a las ferias
+                </button>
+            </div>
+
             <div class="tabs" style="max-width: 400px; margin: 0 auto 20px auto; justify-content: center;">
                 <button class="tab-btn active" id="tab-login" onclick="app.toggleAuthForm('login')">Iniciar Sesión</button>
                 <button class="tab-btn" id="tab-registro" onclick="app.toggleAuthForm('registro')">Registrarse</button>
@@ -549,7 +555,7 @@
 
             <div id="gestion-content-aceptados" class="oculto" style="background: var(--blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra);">
                 <h3 style="margin-bottom: 20px; border-bottom: 2px solid var(--verde-menta); padding-bottom: 10px;">Feriantes Aceptados</h3>
-                <p style="font-size: 0.9rem; color: gray; margin-bottom: 15px;">Listado de emprendedores cuya pre-reserva fue aceptada.</p>
+                <p style="font-size: 0.9rem; color: gray; margin-bottom: 15px;">Listado de emprendedores cuya postulación fue aceptada.</p>
                 <div id="gestion-feriantes-aceptados"></div>
             </div>
 
@@ -609,14 +615,13 @@
                 <div style="display: flex; gap: 10px; align-items: flex-end;">
                     <div style="flex: 1;">
                         <label>Costo Total del Stand ($ ARS)</label>
-                        <input type="number" id="nf-costo" min="0" required oninput="app.actualizarTextoComisionNF()">
+                        <input type="number" id="nf-costo" min="0" required>
                     </div>
                     <div style="flex: 1;">
                         <label>Porcentaje de Reserva (%)</label>
                         <input type="number" id="nf-porcentaje-reserva" min="0" max="100" value="30" required oninput="if(this.value > 100) this.value = 100; if(this.value < 0) this.value = 0;">
                     </div>
                 </div>
-                <small id="nf-texto-comision" style="color: #666; font-weight: bold; margin-top: -5px; display: block;">FeriARG se lleva 0% de comisión por cargo de servicio: $0</small>
                 
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;"><label>Cupos Totales</label><input type="number" id="nf-cupos" min="1" required></div>
@@ -730,7 +735,6 @@
             </div>
 
             <div class="tabs">
-                <!-- NUEVA PESTAÑA PRINCIPAL -->
                 <button class="tab-btn active" id="tab-ent-quienes" onclick="app.switchEntTabs('quienes')">FeriARG</button>
                 <button class="tab-btn" id="tab-ent-descubrir" onclick="app.switchEntTabs('descubrir')">Descubrir Ferias</button>
                 <button class="tab-btn" id="tab-mis-postulaciones" onclick="app.switchEntTabs('postulaciones')">Mis Postulaciones</button>
@@ -739,7 +743,6 @@
                 <button class="tab-btn" id="tab-perfil-ent" onclick="app.switchEntTabs('perfil')">Mi Perfil</button>
             </div>
 
-            <!-- NUEVO CONTENEDOR 0: QUIENES SOMOS (Visible por defecto al entrar) -->
             <div id="ent-quienes-container" class="contenedor-central" style="background: var(--blanco); padding: 40px 30px; border-radius: var(--radio); box-shadow: var(--sombra); max-width: 800px; margin: 10px auto 30px auto;">
                 <h2 style="font-size: 2.2rem; color: var(--verde-bosque); margin-bottom: 10px;">¿Qué es FeriARG?</h2>
                 <p style="font-size: 1.1rem; color: var(--carbon); line-height: 1.8; margin-bottom: 25px;">
@@ -760,7 +763,6 @@
                 <button class="btn-primario" style="font-size: 1.1rem; padding: 12px 30px; background-color: var(--verde-bosque);" onclick="app.switchEntTabs('descubrir')"><i class="fa-solid fa-compass"></i> Ver ferias disponibles</button>
             </div>
 
-            <!-- CONTENEDOR 1: DESCUBRIR (Fijate que ahora le agregamos la clase "oculto") -->
             <div id="ent-descubrir-container" class="oculto">
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                     <input type="text" class="filtros" id="filtro-ferias" placeholder="Buscar por lugar, nombre o rubro..." onkeyup="app.renderEntExplorer()" style="flex: 1; min-width: 200px;">
@@ -1114,6 +1116,17 @@
                 document.querySelectorAll('main > section').forEach(sec => sec.classList.add('oculto'));
                 document.getElementById(viewId).classList.remove('oculto');
                 window.scrollTo(0,0);
+
+                // NUEVO: Ocultamos los botones del header si el usuario ya está parado en el Login/Registro
+                const navLogin = document.getElementById('nav-login');
+                if (!state.currentUser) {
+                    if (viewId === 'view-auth') {
+                        navLogin.classList.add('oculto');
+                    } else {
+                        navLogin.classList.remove('oculto');
+                    }
+                }
+
                 app.actualizarNotificaciones();
             },
             
@@ -1296,18 +1309,17 @@
                         badge.classList.remove('oculto');
                         app.actualizarNotificaciones();
 
-                        // --- NUEVO: BOTÓN DE CAMBIO DE ROL DINÁMICO ---
+                        // --- BOTÓN DE CAMBIO DE ROL DINÁMICO ---
                         const btnSwitch = document.getElementById('btn-switch-role');
                         if (btnSwitch) {
                             if (state.currentRole === 'organizador') {
                                 btnSwitch.innerHTML = `<i class="fa-solid fa-store"></i> Cambiar a vista Feriante`;
                                 btnSwitch.onclick = () => { app.cerrarMenus(); app.seleccionarRol('feriante'); };
                             } else {
-                                btnSwitch.innerHTML = `<i class="fa-solid fa-bullhorn"></i> Cambiar a vista Organizador`;
+                                btnSwitch.innerHTML = `<i class="fa-bullhorn fa-solid"></i> Cambiar a vista Organizador`;
                                 btnSwitch.onclick = () => { app.cerrarMenus(); app.seleccionarRol('organizador'); };
                             }
                         }
-                        // ----------------------------------------------
 
                     } else { badge.classList.add('oculto'); }
                 } else {
@@ -1316,7 +1328,6 @@
                 }
             },
 
-            // --- REDIRECCIONES DE ROL (Requisito 3) ---
             quieroOrganizarAnonimo: () => {
                 state.targetRolRedirect = 'organizador';
                 app.mostrarVista('view-auth');
@@ -1332,6 +1343,9 @@
             },
 
             irAInicio: () => {
+                state.targetRolRedirect = null;
+                state.targetFeriaRedirect = null;
+
                 if (!state.currentUser) {
                     state.currentRole = 'feriante';
                     app.initEntFlow();
@@ -1358,7 +1372,6 @@
                     state.currentUser = user; 
                     app.mostrarAlerta(`¡Bienvenido/a ${user.name}!`);
 
-                    // REQUISITO 2: Si venía de presionar "Postularse" en una feria siendo anónimo
                     if (state.targetFeriaRedirect) {
                         const feriaId = state.targetFeriaRedirect;
                         state.targetFeriaRedirect = null; 
@@ -1369,7 +1382,6 @@
                         return;
                     }
 
-                    // REQUISITO 3: Si presionó "Quiero organizar" estando deslogueado
                     if (state.targetRolRedirect === 'organizador') {
                         state.targetRolRedirect = null;
                         app.seleccionarRol('organizador');
@@ -1400,7 +1412,6 @@
                 app.mostrarAlerta('Cuenta creada exitosamente');
                 document.getElementById('form-registro').reset();
 
-                // REQUISITO 2: Redirección post-registro si venía de postularse
                 if (state.targetFeriaRedirect) {
                     const feriaId = state.targetFeriaRedirect;
                     state.targetFeriaRedirect = null;
@@ -1411,7 +1422,6 @@
                     return;
                 }
 
-                // REQUISITO 3: Si registró cuenta para organizar
                 if (state.targetRolRedirect === 'organizador') {
                     state.targetRolRedirect = null;
                     app.seleccionarRol('organizador');
@@ -1882,24 +1892,21 @@
                     containerPdf.innerHTML = '';
                 }
 
-                // --- RENDERIZAR ACEPTADOS ---
+                // --- RENDERIZAR ACEPTADOS (El organizador cobra 100% neto del stand) ---
                 const containerFeriantes = document.getElementById('gestion-feriantes-aceptados');
                 const aceptados = state.reservas.filter(r => r.idFeria === f.id && ['a pagar', 'reservada', 'pago vencido', 'pago total realizado', '¡nos vemos en la feria!'].includes(r.estado.toLowerCase()));
                 
-                const comisionPorStand = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
-                const standNeto = f.costo - comisionPorStand; 
+                const standNeto = f.costo; 
                 const pctRes = f.porcentajeReserva || 30;
 
                 let dineroEspera = 0;
                 let dineroRetenido = 0;
                 let dineroCobrado = 0;
-                const totalComisionFeriarg = aceptados.length * comisionPorStand;
 
                 const esFeriaRealizada = ['realizada'].includes((f.estado || '').toLowerCase());
-                const hoy = new Date().toISOString().split('T')[0]; // Capturamos 'hoy'
+                const hoy = new Date().toISOString().split('T')[0];
 
                 aceptados.forEach(r => {
-                    // LÓGICA DE VENCIMIENTO AUTOMÁTICO:
                     if (r.estado.toLowerCase() === 'reservada' && r.pagoHasta && r.pagoHasta < hoy) {
                         r.estado = 'pago vencido';
                     }
@@ -1908,7 +1915,7 @@
 
                     if (est === 'a pagar') {
                         dineroEspera += standNeto;
-                    } else if (est === 'reservada' || est === 'pago vencido') { // <-- El dinero vencido sigue "en espera"
+                    } else if (est === 'reservada' || est === 'pago vencido') { 
                         const netoReserva = Math.round((standNeto * pctRes) / 100);
                         const netoRestante = standNeto - netoReserva;
                         dineroEspera += netoRestante;
@@ -1925,23 +1932,19 @@
                 });
 
                 let htmlAceptados = `
-                    <div class="stats-container" style="margin-bottom: 15px;">
+                    <div class="stats-container" style="margin-bottom: 25px;">
                         <div class="stat-box" style="border-left-color: #ffd966; padding: 10px 15px;">
                             <h3 style="font-size: 1.5rem;">$${dineroEspera.toLocaleString('es-AR')}</h3>
                             <p style="font-size: 0.8rem;">A la espera de cobro</p>
                         </div>
                         <div class="stat-box" style="border-left-color: #17a2b8; padding: 10px 15px;">
                             <h3 style="font-size: 1.5rem;">$${dineroRetenido.toLocaleString('es-AR')}</h3>
-                            <p style="font-size: 0.8rem;">Retenido por FeriArg</p>
+                            <p style="font-size: 0.8rem;">Retenido hasta el evento</p>
                         </div>
                         <div class="stat-box" style="border-left-color: var(--verde-bosque); padding: 10px 15px;">
                             <h3 style="font-size: 1.5rem;">$${dineroCobrado.toLocaleString('es-AR')}</h3>
                             <p style="font-size: 0.8rem;">Ya cobrado</p>
                         </div>
-                    </div>
-
-                    <div style="background-color: #eef7f4; border: 1px solid var(--verde-menta); padding: 10px; border-radius: var(--radio); margin-bottom: 20px; text-align: center; font-size: 0.9rem; color: var(--carbon);">
-                        FeriARG se lleva ${COMISION_PLATAFORMA_PORCENTAJE}% de comisión por cargo de servicio: <strong>$${totalComisionFeriarg.toLocaleString('es-AR')}</strong>
                     </div>
 
                     <div class="table-responsive">
@@ -1969,7 +1972,6 @@
                             btnBaja = `<button class="btn-outline btn-chico" style="color:var(--rojo-tomate); border-color:var(--rojo-tomate);" onclick="app.abrirModalBajaFeriante(${r.id})" title="Dar de baja"><i class="fa-solid fa-user-minus"></i> Baja</button>`;
                             
                             if (r.estado.toLowerCase() === 'pago vencido') {
-                                // Miramos si el sello de la reserva coincide con el día de hoy
                                 if (r.ultimaExtension === hoy) {
                                     btnExtender = `<button class="btn-outline btn-chico" disabled style="color:gray; border-color:#ccc; margin-left:5px; cursor:not-allowed;" title="Ya le diste un día extra hoy"><i class="fa-solid fa-check-double"></i> +1 dado hoy</button>`;
                                 } else {
@@ -2124,12 +2126,6 @@
                 document.getElementById('container-requisitos-archivo').classList.toggle('oculto', tipo !== 'archivo');
             },
 
-            actualizarTextoComisionNF: () => {
-                const costo = parseFloat(document.getElementById('nf-costo').value) || 0;
-                const comision = Math.round((costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
-                document.getElementById('nf-texto-comision').textContent = `FeriARG se lleva ${COMISION_PLATAFORMA_PORCENTAJE}% de comisión por cargo de servicio: $${comision}`;
-            },
-
             crearFeria: (e) => {
                 e.preventDefault();
                 
@@ -2242,7 +2238,7 @@
             },
             cerrarAdjuntos: () => { document.getElementById('modal-adjuntos').classList.add('oculto'); },
 
-            // --- FLUJO FERIANTE (Con validación de anónimos) ---
+            // --- FLUJO FERIANTE ---
             switchEntTabs: (tab) => {
                 document.getElementById('tab-ent-quienes').classList.toggle('active', tab === 'quienes');
                 document.getElementById('tab-ent-descubrir').classList.toggle('active', tab === 'descubrir');
@@ -2261,7 +2257,6 @@
                     tituloPanel.textContent = state.currentUser ? "Mi Panel Feriante" : "Explorar Ferias";
                 }
 
-                // REQUISITO 1 modificado: Los anónimos tienen permiso para ver "descubrir" y "quienes"
                 if (!state.currentUser && tab !== 'descubrir' && tab !== 'quienes') {
                     document.getElementById('ent-quienes-container').classList.add('oculto');
                     document.getElementById('ent-descubrir-container').classList.add('oculto');
@@ -2299,6 +2294,7 @@
                 const pctRes = f.porcentajeReserva || 30;
                 const montoReserva = Math.round((f.costo * pctRes) / 100);
                 const montoRestanteStand = f.costo - montoReserva;
+                const comisionFeriante = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
 
                 let bloqueFechasPago = '';
                 let desdeFormat = '';
@@ -2321,7 +2317,8 @@
                 let actionButtons = `<button class="btn-secundario" style="width: 100%; margin-bottom: 10px;" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles de Feria</button>`;
 
                 if (r.estado.toLowerCase() === 'a pagar') {
-                    actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, 'reservada')">Pagar Reserva ($${montoReserva})</button>`;
+                    const totalAPagarConComision = montoReserva + comisionFeriante;
+                    actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, 'reservada')">Pagar Reserva ($${totalAPagarConComision})</button>`;
                 } else if (r.estado.toLowerCase() === 'reservada') {
                     const hoy = new Date().toISOString().split('T')[0];
                     if (r.pagoDesde && r.pagoHasta) {
@@ -2330,10 +2327,10 @@
                         } else if (hoy > r.pagoHasta) {
                             actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: var(--rojo-tomate);" title="Plazo vencido">Plazo de pago vencido</button>`;
                         } else {
-                            actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand ($${montoRestanteStand})</button>`;
+                            actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Resto del Stand ($${montoRestanteStand})</button>`;
                         }
                     } else {
-                        actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Stand ($${montoRestanteStand})</button>`;
+                        actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Resto del Stand ($${montoRestanteStand})</button>`;
                     }
                 }
 
@@ -2354,7 +2351,12 @@
                             <div class="card-title">${f.nombre}</div>
                             <div class="card-info mt-2"><i class="fa-regular fa-calendar"></i> ${f.fecha}</div>
                             <div class="card-info"><i class="fa-solid fa-location-dot"></i> ${f.ubicacion}</div>
-                            <div class="card-info mt-2" style="font-weight:bold; color: var(--carbon);">💰 Costo Total: $${f.costo}</div>
+                            <div class="card-info mt-2" style="font-weight:bold; color: var(--carbon);">💰 Stand Total: $${f.costo}</div>
+                            <div class="card-info" style="font-size:0.85rem; color: var(--rojo-tomate);">💳 Reserva acordada (${pctRes}%): $${montoReserva}</div>
+                            
+                            <div style="font-size: 0.75rem; color: #666; margin-top: 2px; border-top: 1px dashed var(--borde); padding-top: 4px;">
+                                Cargo por servicio: ${COMISION_PLATAFORMA_PORCENTAJE}%, $${comisionFeriante}
+                            </div>
                             ${bloqueFechasPago}
                         </div>
                         <div class="card-footer" style="padding: 15px; border-top: 1px solid var(--borde); justify-content: center; align-items: stretch;">
@@ -2403,8 +2405,8 @@
                     
                     const pctRes = f.porcentajeReserva || 30;
                     const valRes = Math.round((f.costo * pctRes) / 100);
+                    const comisionFeriante = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
 
-                    // NUEVO: El botón de la banderita solo existe si hay un usuario logueado
                     const btnReporte = state.currentUser ? `<button class="btn-outline btn-chico" style="border: none; color: var(--rojo-tomate); padding: 0 5px; cursor: pointer;" onclick="app.abrirModalReporte(${f.id})" title="Reportar feria"><i class="fa-solid fa-flag"></i></button>` : '';
 
                     grid.innerHTML += `
@@ -2428,11 +2430,16 @@
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span style="color: var(--carbon); font-size: 0.95rem;">Stand Total:</span>
                                     <strong style="color: var(--verde-bosque); font-size: 1.15rem;">$${f.costo}</strong>
-                                </div>
+                                                </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--borde); padding-top: 4px; font-size: 0.85rem; color: #555;">
                                     <span>Reserva (${pctRes}%):</span>
                                     <strong style="color: var(--rojo-tomate);">$${valRes}</strong>
                                 </div>
+                                
+                                <div style="font-size: 0.75rem; color: #666; text-align: center; margin-top: 2px; border-top: 1px solid #eee; padding-top: 4px;">
+                                    Cargo por servicio: ${COMISION_PLATAFORMA_PORCENTAJE}%, $${comisionFeriante}
+                                </div>
+
                                 <button class="btn-secundario mt-2" onclick="app.abrirDetalleFeria(${f.id})">Ver Detalles</button>
                             </div>
                         </div>
@@ -2459,7 +2466,7 @@
 
                 const pctReserva = f.porcentajeReserva || 30;
                 const valorReserva = Math.round((f.costo * pctReserva) / 100);
-                const montoComision = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
+                const comisionFeriante = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
 
                 let btnHtml = '';
                 if (esFeriaTerminada) {
@@ -2469,7 +2476,6 @@
                 } else if (f.cuposDisponibles <= 0) { 
                     btnHtml = `<button class="btn-primario" disabled style="width:100%; background:grey; padding: 15px;">Cupos Agotados</button>`; 
                 } else if (!state.currentUser) { 
-                    // REQUISITO 2: Botón Postularse para usuario anónimo que guarda redirect
                     btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem; background-color: var(--verde-bosque);" onclick="app.postularseAnonimo(${f.id})">Postularse</button>`; 
                 } else { 
                     btnHtml = `<button class="btn-primario" style="width:100%; padding: 15px; font-size: 1.1rem; background-color: var(--verde-bosque);" onclick="app.abrirModalPostulacion(${f.id})">Postularse (gratis)</button>`; 
@@ -2485,16 +2491,6 @@
                     requisitosVisualHtml = `<p>${f.requisitos || '-'}</p>`;
                 }
 
-                let comisionHtml = '';
-                if (state.currentRole === 'organizador') {
-                    comisionHtml = `
-                        <div style="font-size: 0.85rem; color: #444; text-align: center; margin-top: 10px; border-top: 1px dashed var(--verde-menta); padding-top: 8px;">
-                            FeriARG se lleva ${COMISION_PLATAFORMA_PORCENTAJE}% de comisión por cargo de servicio: <strong>$${montoComision}</strong>.<br>
-                            <span style="font-size: 0.75rem; color: #666;">(Por el momento la comisión es del 0% para todas las transacciones)</span>
-                        </div>
-                    `;
-                }
-
                 const desgloseEconomico = `
                     <div style="background-color: #eef7f4; border: 1px solid var(--verde-menta); padding: 15px; border-radius: var(--radio); margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
@@ -2505,7 +2501,9 @@
                             <span>Valor de la Reserva acordada (${pctReserva}%):</span>
                             <span style="color: var(--rojo-tomate); font-weight: bold;">$${valorReserva}</span>
                         </div>
-                        ${comisionHtml}
+                        <div style="font-size: 0.85rem; color: #444; text-align: center; margin-top: 10px; border-top: 1px dashed var(--verde-menta); padding-top: 8px;">
+                            Cargo por servicio: ${COMISION_PLATAFORMA_PORCENTAJE}%, $${comisionFeriante}
+                        </div>
                     </div>
                 `;
 
@@ -2904,11 +2902,10 @@
             if (!e.target.closest('.menu-usuario')) { app.cerrarMenus(); } 
         });
         
-        // --- INICIALIZACIÓN POR DEFECTO (REQUISITO 1) ---
+        // --- INICIALIZACIÓN POR DEFECTO ---
         const urlParams = new URLSearchParams(window.location.search);
         const feriaIdCompartida = urlParams.get('feria');
 
-        // Disparamos el dashboard Feriante directamente
         state.currentRole = 'feriante';
         app.actualizarHeader();
         app.initEntFlow();
