@@ -456,6 +456,7 @@
             <div id="org-perfil-container" class="oculto" style="margin-top: 20px;">
                 <form onsubmit="app.guardarPerfilOrg(event)">
                     <h3 class="text-center">Mi Perfil Organizador</h3>
+                    <div id="badge-mi-verificacion" class="text-center mb-2"></div>
                     <div class="perfil-img-container">
                         <img id="img-preview-org" class="perfil-img-preview" src="https://via.placeholder.com/120?text=Logo">
                         <input type="file" id="upload-org" class="input-file-small" accept="image/*" onchange="app.previewImage(this, 'img-preview-org')">
@@ -874,6 +875,9 @@
             <div style="background: var(--blanco); border-radius: var(--radio); max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px;">
                 <button onclick="app.cerrarModalPostulacion()" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--carbon);"><i class="fa-solid fa-xmark"></i></button>
                 <h3 style="color: var(--verde-bosque); margin-bottom: 5px;">Completar Postulación</h3>
+                <div id="alerta-postulacion-no-verificado" class="alerta oculto" style="background-color: #fff3f3; color: #a60000; border: 1px solid #ffb3b3; margin-bottom: 15px; font-size: 0.85rem; text-align: left;">
+                <i class="fa-solid fa-shield-halved"></i> <strong>Cuidado:</strong> El organizador de esta feria no se encuentra verificado por Feriarg. Te recomendamos verificar su identidad antes de transferir dinero.
+                </div>
                 <p style="font-size: 0.9rem; color: gray; margin-bottom: 20px;">Adjuntá información extra (opcional) para que el organizador conozca mejor tu trabajo.</p>
                 <form id="form-adjuntos-postulacion" onsubmit="app.confirmarPostulacion(event)" style="box-shadow: none; padding: 0;">
                     <input type="hidden" id="post-feria-id">
@@ -1007,7 +1011,7 @@
         // --- MOCK DATA ---
         const MOCK_DATA = {
             usuarios: [
-                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30111111112', ig: 'https://www.instagram.com/meridiano.feria/', fb: '', avatar: './img/feriarg.png' }, entData: null },
+                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30111111112', ig: 'https://...', fb: '', avatar: './img/feriarg.png', verificado: true }},
                 { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', bio: 'Estudiante de Administración en la UNLP apasionado por la pastelería. Empecé haciendo budines para mis compañeros de cursada y hoy busco llevar mis sabores a todas las ferias de la región.', productos: 'Pastelería artesanal, alfajores de almendra, budines y cookies.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: './img/santiago.png', galeria: ['./img/mercado-productores.png', './img/feria-verano-pasada.png'] } },
                 { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', bio: 'Diseñadora textil independiente.', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: './img/lucia.png', galeria: [] } },
                 { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', bio: 'Artesano del barro y la cerámica.', productos: 'Cerámica.', ig: '', fb: '', avatar: './img/marcos.png', galeria: [] } },
@@ -1613,6 +1617,12 @@
                     document.getElementById('edit-org-ig').value = data.ig || ''; 
                     document.getElementById('edit-org-fb').value = data.fb || ''; 
                     if(data.avatar) document.getElementById('img-preview-org').src = data.avatar;
+                    const contenedorVerif = document.getElementById('badge-mi-verificacion');
+                        if (data.verificado) {
+                        contenedorVerif.innerHTML = `<span class="badge aceptada" style="font-size:0.9rem;"><i class="fa-solid fa-shield-halved"></i> Organización Verificada por Feriarg</span>`;
+                        } else {
+                         contenedorVerif.innerHTML = `<span class="badge badge-estado-rechazada" style="font-size:0.9rem;" title="Tu documentación está pendiente de revisión"><i class="fa-solid fa-triangle-exclamation"></i> Organización No Verificada</span>`;
+                        }
                 }
             },
 
@@ -2400,6 +2410,7 @@
 
                 paginadas.forEach(f => {
                     const org = state.usuarios.find(u => u.id === f.idOrg) || { orgData: { name: 'Org. Independiente' } };
+                    const tildeVerificado = (org.orgData && org.orgData.verificado) ? `<i class="fa-solid fa-circle-check" style="color: #1d9bf0; margin-left: 4px;" title="Esta organización fue verificada por Feriarg"></i>` : '';
                     const badgeCupo = f.cuposDisponibles > 0 ? `<span class="badge cupos">${f.cuposDisponibles} libres</span>` : `<span class="badge agotado">Agotado</span>`;
                     const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
                     
@@ -2414,8 +2425,7 @@
                             <img src="${imgSrc}" class="card-img" alt="Feria">
                             <div class="card-body">
                                 <div style="display:flex; justify-content: space-between; align-items: flex-start;">
-                                    <span style="font-size: 0.8rem; color: gray; flex-grow: 1;"><i class="fa-solid fa-building"></i> ${org.orgData ? org.orgData.name : 'Organizador'}</span>
-                                    <div style="display:flex; gap: 5px; align-items: center;">
+                                        <span style="font-size: 0.8rem; color: gray; flex-grow: 1;"><i class="fa-solid fa-building"></i> ${org.orgData ? org.orgData.name : 'Organizador'} ${tildeVerificado}</span>                                    <div style="display:flex; gap: 5px; align-items: center;">
                                         ${badgeCupo}
                                         <button class="btn-outline btn-chico" style="border: none; color: var(--verde-bosque); padding: 0 5px; cursor: pointer;" onclick="app.compartirFeria(${f.id})" title="Compartir Feria"><i class="fa-solid fa-share-nodes"></i></button>
                                         ${btnReporte}
@@ -2482,6 +2492,7 @@
                 }
 
                 const org = state.usuarios.find(u => u.id === f.idOrg) || { orgData: { name: 'Organizador' }, id: f.idOrg };
+                const tildeVerificado = (org.orgData && org.orgData.verificado) ? `<i class="fa-solid fa-circle-check" style="color: #1d9bf0; margin-left: 4px;" title="Esta organización fue verificada por Feriarg"></i>` : '';
                 const imgSrc = f.imagen || `https://via.placeholder.com/800x300/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
                 
                 let requisitosVisualHtml = '';
@@ -2512,7 +2523,7 @@
                     <div style="padding: 0 10px;">
                         <h2 style="margin-bottom: 5px; font-size: 2rem;">${f.nombre}</h2>
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px;">
-                            <p style="color: gray; margin: 0; font-size: 1.1rem;">Organiza: <strong>${org.orgData ? org.orgData.name : 'Organizador'}</strong></p>
+                            <p style="color: gray; margin: 0; font-size: 1.1rem;">Organiza: <strong>${org.orgData ? org.orgData.name : 'Organizador'}</strong> ${tildeVerificado}</p>
                             <button class="btn-outline btn-chico" onclick="app.abrirPerfilUsuario(${org.id})"><i class="fa-solid fa-building-user"></i> Ver Perfil</button>
                         </div>
                         
@@ -2552,9 +2563,23 @@
             cerrarModalFeria: () => { document.getElementById('modal-detalle-feria').classList.add('oculto'); },
 
             abrirModalPostulacion: (idFeria) => {
-                app.cerrarModalFeria(); document.getElementById('post-feria-id').value = idFeria;
-                document.getElementById('form-adjuntos-postulacion').reset(); document.getElementById('modal-postulacion').classList.remove('oculto');
-            },
+    app.cerrarModalFeria(); document.getElementById('post-feria-id').value = idFeria;
+
+    // --- LÓGICA DEL CARTEL DE ADVERTENCIA ---
+    const feria = state.ferias.find(f => f.id === idFeria);
+    const organizador = state.usuarios.find(u => u.id === feria.idOrg);
+    const estaVerif = organizador && organizador.orgData && organizador.orgData.verificado === true;
+
+    const cartelPeligro = document.getElementById('alerta-postulacion-no-verificado');
+    if (!estaVerif) {
+        cartelPeligro.classList.remove('oculto');
+    } else {
+        cartelPeligro.classList.add('oculto');
+    }
+    // ----------------------------------------
+
+    document.getElementById('form-adjuntos-postulacion').reset(); document.getElementById('modal-postulacion').classList.remove('oculto');
+},
             cerrarModalPostulacion: () => { document.getElementById('modal-postulacion').classList.add('oculto'); },
 
             confirmarPostulacion: (e) => {
