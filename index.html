@@ -1011,7 +1011,8 @@
         // --- MOCK DATA ---
         const MOCK_DATA = {
             usuarios: [
-                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30111111112', ig: 'https://...', fb: '', avatar: './img/feriarg.png', verificado: true }},
+                // AGREGADOS: descuentosRetencion y deuda para soportar el clearing del Punto 3
+                { id: 1, name: 'Organizador FeriARG', email: 'org@test.com', password: '123', isOrgSetup: true, isEntSetup: false, orgData: { name: 'Feria Meridiano', cuit: '30111111112', ig: 'https://...', fb: '', avatar: './img/feriarg.png', verificado: true, descuentosRetencion: 0, deuda: 0 }},
                 { id: 2, name: 'Santiago', email: 'emp@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Gastronomia', bio: 'Estudiante de Administración en la UNLP apasionado por la pastelería. Empecé haciendo budines para mis compañeros de cursada y hoy busco llevar mis sabores a todas las ferias de la región.', productos: 'Pastelería artesanal, alfajores de almendra, budines y cookies.', ig: 'https://www.instagram.com/santi.dulces/', fb: '', avatar: './img/santiago.png', galeria: ['./img/mercado-productores.png', './img/feria-verano-pasada.png'] } },
                 { id: 3, name: 'Lucía (Mock)', email: 'lu@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Indumentaria', bio: 'Diseñadora textil independiente.', productos: 'Ropa Vintage.', ig: '', fb: '', avatar: './img/lucia.png', galeria: [] } },
                 { id: 4, name: 'Marcos (Mock)', email: 'marcos@test.com', password: '123', isOrgSetup: false, isEntSetup: true, orgData: null, entData: { rubro: 'Artesanias', bio: 'Artesano del barro y la cerámica.', productos: 'Cerámica.', ig: '', fb: '', avatar: './img/marcos.png', galeria: [] } },
@@ -1121,7 +1122,6 @@
                 document.getElementById(viewId).classList.remove('oculto');
                 window.scrollTo(0,0);
 
-                // NUEVO: Ocultamos los botones del header si el usuario ya está parado en el Login/Registro
                 const navLogin = document.getElementById('nav-login');
                 if (!state.currentUser) {
                     if (viewId === 'view-auth') {
@@ -1313,7 +1313,6 @@
                         badge.classList.remove('oculto');
                         app.actualizarNotificaciones();
 
-                        // --- BOTÓN DE CAMBIO DE ROL DINÁMICO ---
                         const btnSwitch = document.getElementById('btn-switch-role');
                         if (btnSwitch) {
                             if (state.currentRole === 'organizador') {
@@ -1580,7 +1579,9 @@
                     cbu: document.getElementById('org-cbu').value,
                     ig: document.getElementById('org-ig').value, 
                     fb: document.getElementById('org-fb').value, 
-                    avatar: '' 
+                    avatar: '',
+                    descuentosRetencion: 0,
+                    deuda: 0
                 };
                 state.currentUser.isOrgSetup = true; 
                 app.mostrarAlerta('Perfil Organizador configurado'); 
@@ -1636,7 +1637,9 @@
                     cbu: document.getElementById('edit-org-cbu').value,
                     ig: document.getElementById('edit-org-ig').value, 
                     fb: document.getElementById('edit-org-fb').value, 
-                    avatar: document.getElementById('img-preview-org').src 
+                    avatar: document.getElementById('img-preview-org').src,
+                    descuentosRetencion: (state.currentUser.orgData ? state.currentUser.orgData.descuentosRetencion : 0),
+                    deuda: (state.currentUser.orgData ? state.currentUser.orgData.deuda : 0)
                 };
                 app.mostrarAlerta('Perfil de organizador actualizado');
             },
@@ -1902,7 +1905,10 @@
                     containerPdf.innerHTML = '';
                 }
 
-                // --- RENDERIZAR ACEPTADOS (El organizador cobra 100% neto del stand) ---
+                // --- NUEVO ESQUEMA DE CAJA (PUNTOS 1, 2 y 3) ---
+                const organizadorObj = state.usuarios.find(u => u.id === f.idOrg);
+                const estaVerif = organizadorObj && organizadorObj.orgData && organizadorObj.orgData.verificado === true;
+
                 const containerFeriantes = document.getElementById('gestion-feriantes-aceptados');
                 const aceptados = state.reservas.filter(r => r.idFeria === f.id && ['a pagar', 'reservada', 'pago vencido', 'pago total realizado', '¡nos vemos en la feria!'].includes(r.estado.toLowerCase()));
                 
@@ -1922,24 +1928,65 @@
                     }
 
                     const est = r.estado.toLowerCase();
+                    const netoReserva = Math.round((standNeto * pctRes) / 100);
+                    const netoRestante = standNeto - netoReserva;
 
                     if (est === 'a pagar') {
                         dineroEspera += standNeto;
                     } else if (est === 'reservada' || est === 'pago vencido') { 
-                        const netoReserva = Math.round((standNeto * pctRes) / 100);
-                        const netoRestante = standNeto - netoReserva;
                         dineroEspera += netoRestante;
                         
                         if (esFeriaRealizada) {
                             dineroCobrado += netoReserva;
                         } else {
-                            dineroRetenido += netoReserva;
+                            // PUNTO 1 y 2: Lógica de retención de reservas
+                            if (estaVerif) {
+                                dineroCobrado += netoReserva; // Transfiere directo al verificado
+                            } else {
+                                dineroRetenido += netoReserva; // Retiene al no verificado
+                            }
                         }
                     } else if (est === 'pago total realizado' || est === '¡nos vemos en la feria!') {
-                        if (esFeriaRealizada) dineroCobrado += standNeto;
-                        else dineroRetenido += standNeto;
+                        if (esFeriaRealizada) {
+                            dineroCobrado += standNeto;
+                        } else {
+                            // PUNTO 1 y 2: Lógica de retención de stand total
+                            if (estaVerif) {
+                                dineroCobrado += netoReserva;   // Reserva ya la cobró
+                                dineroRetenido += netoRestante; // El resto se retiene hasta culminar
+                            } else {
+                                dineroRetenido += standNeto;    // 100% retenido al no verificado
+                            }
+                        }
                     }
                 });
+
+                // Impactar descuentos de Netting (Punto 3) en la vista de este organizador
+                let descuentoNettingAplicadoAca = 0;
+                if (estaVerif && organizadorObj.orgData && organizadorObj.orgData.descuentosRetencion > 0) {
+                    descuentoNettingAplicadoAca = Math.min(dineroRetenido, organizadorObj.orgData.descuentosRetencion);
+                    dineroRetenido -= descuentoNettingAplicadoAca;
+                }
+
+                const deudaNetting = (organizadorObj && organizadorObj.orgData && organizadorObj.orgData.deuda) ? organizadorObj.orgData.deuda : 0;
+                let htmlDeudaBox = '';
+                if (deudaNetting > 0) {
+                    htmlDeudaBox = `
+                        <div class="stat-box" style="border-left-color: var(--rojo-tomate); padding: 10px 15px; background-color: #fff3f3;">
+                            <h3 style="font-size: 1.5rem; color: var(--rojo-tomate);">-$${deudaNetting.toLocaleString('es-AR')}</h3>
+                            <p style="font-size: 0.8rem; color: var(--rojo-tomate); font-weight: bold;">Deuda Netting</p>
+                        </div>
+                    `;
+                }
+
+                let cartelAvisoNetting = '';
+                if (descuentoNettingAplicadoAca > 0) {
+                    cartelAvisoNetting = `
+                        <div style="font-size: 0.85rem; color: #855a00; background-color: #fff8e6; padding: 8px 12px; border-radius: var(--radio); border: 1px solid #ffd966; margin-top: -15px; margin-bottom: 20px; text-align: left;">
+                            <i class="fa-solid fa-scale-balanced"></i> <strong>Clearing automático:</strong> Se han descontado <strong>$${descuentoNettingAplicadoAca.toLocaleString('es-AR')}</strong> del dinero retenido para cubrir la devolución de reservas cobradas a feriantes que diste de baja.
+                        </div>
+                    `;
+                }
 
                 let htmlAceptados = `
                     <div class="stats-container" style="margin-bottom: 25px;">
@@ -1955,8 +2002,9 @@
                             <h3 style="font-size: 1.5rem;">$${dineroCobrado.toLocaleString('es-AR')}</h3>
                             <p style="font-size: 0.8rem;">Ya cobrado</p>
                         </div>
+                        ${htmlDeudaBox}
                     </div>
-
+                    ${cartelAvisoNetting}
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -2197,6 +2245,8 @@
             cerrarModalBajaFeriante: () => {
                 document.getElementById('modal-baja-feriante').classList.add('oculto');
             },
+
+            // --- LÓGICA DE BAJA Y NETTING (PUNTO 3) ---
             confirmarBajaFeriante: (e) => {
                 e.preventDefault();
                 const idR = parseInt(document.getElementById('baja-reserva-id').value);
@@ -2204,13 +2254,50 @@
                 
                 const res = state.reservas.find(r => r.id === idR);
                 if(res) {
+                    const f = state.ferias.find(x => x.id === res.idFeria);
+                    const org = state.usuarios.find(u => u.id === f.idOrg);
+                    const estaVerif = org && org.orgData && org.orgData.verificado === true;
+
+                    const estadoPrevio = res.estado.toLowerCase();
+                    const teniaReservaPagada = ['reservada', 'pago vencido', 'pago total realizado', '¡nos vemos en la feria!'].includes(estadoPrevio);
+
+                    if (teniaReservaPagada && estaVerif) {
+                        const pctRes = f.porcentajeReserva || 30;
+                        const montoDevolucionReserva = Math.round((f.costo * pctRes) / 100);
+
+                        if (!org.orgData.descuentosRetencion) org.orgData.descuentosRetencion = 0;
+                        if (!org.orgData.deuda) org.orgData.deuda = 0;
+
+                        // Sumamos todo el dinero retenido que el organizador tenga en TODAS sus ferias activas
+                        let retencionTotalDisponible = 0;
+                        state.ferias.filter(fer => fer.idOrg === org.id && !['realizada', 'cancelada'].includes((fer.estado || '').toLowerCase())).forEach(fer => {
+                            const reservasRetenidasFer = state.reservas.filter(r => r.idFeria === fer.id && ['pago total realizado', '¡nos vemos en la feria!'].includes(r.estado.toLowerCase()) && r.id !== res.id);
+                            const pR = fer.porcentajeReserva || 30;
+                            const mRestanteStand = fer.costo - Math.round((fer.costo * pR) / 100);
+                            retencionTotalDisponible += (mRestanteStand * reservasRetenidasFer.length);
+                        });
+
+                        // Descontamos lo que ya le venimos comiendo por otras bajas previas
+                        let saldoRetenidoEfectivo = Math.max(0, retencionTotalDisponible - org.orgData.descuentosRetencion);
+
+                        if (saldoRetenidoEfectivo >= montoDevolucionReserva) {
+                            // Si le alcanza con lo retenido -> Lo absorbe el sistema
+                            org.orgData.descuentosRetencion += montoDevolucionReserva;
+                        } else {
+                            // Si no alcanza -> Absorbe lo que quede y el resto pasa a DEUDA
+                            const absorbible = saldoRetenidoEfectivo;
+                            const faltanteADeuda = montoDevolucionReserva - absorbible;
+                            
+                            org.orgData.descuentosRetencion += absorbible;
+                            org.orgData.deuda += faltanteADeuda;
+                        }
+                    }
+
                     res.estado = 'cancelada por organizador';
                     res.motivoRechazo = motivo; 
-                    
-                    const f = state.ferias.find(x => x.id === res.idFeria);
                     if(f) f.cuposDisponibles++; 
 
-                    app.mostrarAlerta("Feriante eliminado correctamente.");
+                    app.mostrarAlerta("Baja confirmada. Cuentas y clearing actualizados.");
                     app.cerrarModalBajaFeriante();
                     app.abrirGestionFeria(f.id); 
                     app.actualizarNotificaciones();
@@ -2440,7 +2527,7 @@
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span style="color: var(--carbon); font-size: 0.95rem;">Stand Total:</span>
                                     <strong style="color: var(--verde-bosque); font-size: 1.15rem;">$${f.costo}</strong>
-                                                </div>
+                                                                                </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--borde); padding-top: 4px; font-size: 0.85rem; color: #555;">
                                     <span>Reserva (${pctRes}%):</span>
                                     <strong style="color: var(--rojo-tomate);">$${valRes}</strong>
@@ -2563,23 +2650,21 @@
             cerrarModalFeria: () => { document.getElementById('modal-detalle-feria').classList.add('oculto'); },
 
             abrirModalPostulacion: (idFeria) => {
-    app.cerrarModalFeria(); document.getElementById('post-feria-id').value = idFeria;
+                app.cerrarModalFeria(); document.getElementById('post-feria-id').value = idFeria;
 
-    // --- LÓGICA DEL CARTEL DE ADVERTENCIA ---
-    const feria = state.ferias.find(f => f.id === idFeria);
-    const organizador = state.usuarios.find(u => u.id === feria.idOrg);
-    const estaVerif = organizador && organizador.orgData && organizador.orgData.verificado === true;
+                const feria = state.ferias.find(f => f.id === idFeria);
+                const organizador = state.usuarios.find(u => u.id === feria.idOrg);
+                const estaVerif = organizador && organizador.orgData && organizador.orgData.verificado === true;
 
-    const cartelPeligro = document.getElementById('alerta-postulacion-no-verificado');
-    if (!estaVerif) {
-        cartelPeligro.classList.remove('oculto');
-    } else {
-        cartelPeligro.classList.add('oculto');
-    }
-    // ----------------------------------------
+                const cartelPeligro = document.getElementById('alerta-postulacion-no-verificado');
+                if (!estaVerif) {
+                    cartelPeligro.classList.remove('oculto');
+                } else {
+                    cartelPeligro.classList.add('oculto');
+                }
 
-    document.getElementById('form-adjuntos-postulacion').reset(); document.getElementById('modal-postulacion').classList.remove('oculto');
-},
+                document.getElementById('form-adjuntos-postulacion').reset(); document.getElementById('modal-postulacion').classList.remove('oculto');
+            },
             cerrarModalPostulacion: () => { document.getElementById('modal-postulacion').classList.add('oculto'); },
 
             confirmarPostulacion: (e) => {
@@ -2621,10 +2706,9 @@
 
             extenderPlazoPago: (idReserva) => {
                 const res = state.reservas.find(r => r.id === idReserva);
-                const hoy = new Date().toISOString().split('T')[0]; // Capturamos 'hoy'
+                const hoy = new Date().toISOString().split('T')[0]; 
 
                 if (res && res.pagoHasta) {
-                    // VALIDACIÓN: ¿Ya se lo dimos hoy?
                     if (res.ultimaExtension === hoy) {
                         alert("Límite diario: Ya le otorgaste un día extra a este feriante en el día de hoy.");
                         return;
@@ -2636,7 +2720,7 @@
 
                     res.pagoHasta = nuevoHasta;
                     res.estado = 'reservada'; 
-                    res.ultimaExtension = hoy; // <--- GUARDAMOS EL SELLO DE HOY
+                    res.ultimaExtension = hoy;
 
                     app.mostrarAlerta(`Plazo extendido un día más (Vence: ${nuevoHasta.split('-').reverse().join('/')})`);
                     app.abrirGestionFeria(res.idFeria);
