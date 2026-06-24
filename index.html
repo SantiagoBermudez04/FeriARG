@@ -494,9 +494,12 @@
                 <button class="btn-outline" onclick="app.mostrarVista('view-org-dashboard')">Volver al Panel</button>
             </div>
             
-            <div style="background: var(--blanco); padding: 20px; border-radius: var(--radio); margin-bottom: 20px; box-shadow: var(--sombra); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+            <div style="background: var(--blanco); padding: 20px; border-radius: var(--radio); margin-bottom: 20px; box-shadow: var(--sombra); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px;">
                 <div>
                     <h3>Estado Actual: <span id="gestion-estado-badge" class="badge"></span></h3>
+                </div>
+                <div style="font-size: 1.05rem; color: var(--carbon);">
+                    <i class="fa-solid fa-clock" style="color: var(--rojo-tomate);"></i> <strong>Tiempo para pagar el total:</strong> <span id="gestion-tiempo-pago"></span>
                 </div>
             </div>
 
@@ -545,7 +548,10 @@
                         <label>Cupos Totales</label><input type="number" id="ed-cupos" min="1" required>
                         <small id="ed-cupos-help" style="color: var(--rojo-tomate); font-weight: bold;"></small>
                     </div>
-                    <div></div>
+                    <div>
+                        <label>Límite para pagar Stand</label>
+                        <input type="date" id="ed-pago-hasta" required>
+                    </div>
                     <div style="grid-column: 1 / -1;"><label>Descripción General</label><textarea id="ed-desc" rows="3" maxlength="500" required></textarea></div>
                     <div style="grid-column: 1 / -1; text-align: right; display:flex; justify-content:space-between; align-items:center;">
                         <button type="button" id="btn-cancelar-feria" class="btn-outline" style="color: var(--rojo-tomate); border-color: var(--rojo-tomate);" onclick="app.promptCancelarFeria()"><i class="fa-solid fa-ban"></i> Cancelar Feria</button>
@@ -1007,6 +1013,7 @@
         document.getElementById('nf-fecha').min = fechaActual;
         document.getElementById('ed-fecha').min = fechaActual;
         document.getElementById('nf-pago-hasta').min = fechaActual;
+        document.getElementById('ed-pago-hasta').min = fechaActual; 
 
         // --- MOCK DATA ---
         const MOCK_DATA = {
@@ -1022,7 +1029,7 @@
             ],
             ferias: [
                 { id: 101, idOrg: 1, nombre: 'Feria de Diseño Plaza', fecha: '2026-06-20', horario: '14:00 a 20:00', privacidad: 'publica', ubicacion: 'Plaza Principal', requisitosTipo: 'texto', requisitos: 'Llevar mesa.', rubros: 'Indumentaria, Diseño', desc: 'Gran feria de diseño independiente.', costo: 5000, porcentajeReserva: 30, cuposTotales: 50, cuposDisponibles: 12, estado: 'Aceptada', imagen: './img/feria-diseno-plaza.png' },
-                { id: 102, idOrg: 1, nombre: 'Mercado de Productores', fecha: '2026-06-27', horario: '10:00 a 18:00', privacidad: 'publica', ubicacion: 'Parque Central', requisitosTipo: 'texto', requisitos: 'Libreta sanitaria.', rubros: 'Gastronomía', desc: 'Evento gastronómico mensual.', costo: 3500, porcentajeReserva: 20, cuposTotales: 30, cuposDisponibles: 5, estado: 'Aceptada', imagen: './img/mercado-productores.png' },
+                { id: 102, idOrg: 1, nombre: 'Mercado de Productores', fecha: '2026-07-27', horario: '10:00 a 18:00', privacidad: 'publica', ubicacion: 'Parque Central', requisitosTipo: 'texto', requisitos: 'Libreta sanitaria.', rubros: 'Gastronomía', desc: 'Evento gastronómico mensual.', costo: 3500, porcentajeReserva: 20, cuposTotales: 30, cuposDisponibles: 5, estado: 'Aceptada', imagen: './img/mercado-productores.png' },
                 { id: 103, idOrg: 1, nombre: 'Feria Vintage Total', fecha: '2026-07-15', horario: '12:00 a 19:00', privacidad: 'publica', ubicacion: 'Centro Cultural', requisitosTipo: 'texto', requisitos: '-', rubros: 'Todos', desc: 'Feria exclusiva de invierno.', costo: 6000, porcentajeReserva: 25, cuposTotales: 20, cuposDisponibles: 1, estado: 'Aceptada', imagen: './img/feria-vintage-total.png' },
                 { id: 104, idOrg: 1, nombre: 'Festival de Emprendedores UNLP', fecha: '2026-08-10', horario: '09:00 a 17:00', privacidad: 'publica', ubicacion: 'Patio UNLP', requisitosTipo: 'texto', requisitos: 'Ser alumno regular o graduado.', rubros: 'Todos', desc: 'Gran evento anual universitario.', costo: 2500, porcentajeReserva: 40, cuposTotales: 100, cuposDisponibles: 85, estado: 'Aceptada', imagen: './img/festival-emprendedores-unlp.png' },
                 { id: 105, idOrg: 1, nombre: 'Feria de Verano Pasada', fecha: '2026-02-10', horario: '10:00 a 18:00', privacidad: 'publica', ubicacion: 'Galpón Tolosa', requisitosTipo: 'texto', requisitos: '-', rubros: 'Todos', desc: 'Ya finalizó con total éxito.', costo: 2000, porcentajeReserva: 30, cuposTotales: 20, cuposDisponibles: 0, estado: 'Realizada', imagen: './img/feria-verano-pasada.png' },
@@ -1032,17 +1039,17 @@
                 { id: 109, idOrg: 1, nombre: 'Mercado de Pulgas Platense', fecha: '2026-07-05', horario: '09:00 a 16:00', privacidad: 'publica', ubicacion: 'Plaza Rocha', requisitosTipo: 'texto', requisitos: 'Antigüedades permitidas', rubros: 'Artesanias, Accesorios', desc: 'Un viaje en el tiempo.', costo: 2000, porcentajeReserva: 50, cuposTotales: 60, cuposDisponibles: 45, estado: 'Aceptada', imagen: './img/mercado-pulgas-platense.png' }
             ],
             reservas: [
-                { id: 1001, idFeria: 101, idEnt: 2, estado: 'pendiente', fechaSolicitud: '2026-06-01', adjuntos: null },
-                { id: 1002, idFeria: 102, idEnt: 2, estado: 'a pagar', fechaSolicitud: '2026-06-02', adjuntos: null },
-                { id: 1003, idFeria: 103, idEnt: 2, estado: 'reservada', fechaSolicitud: '2026-05-15', pagoDesde: '2026-06-10', pagoHasta: '2026-07-10', adjuntos: null },
-                { id: 1009, idFeria: 106, idEnt: 2, estado: 'reservada', fechaSolicitud: '2026-06-01', pagoDesde: '2026-06-01', pagoHasta: '2026-06-10', adjuntos: null },
-                { id: 1004, idFeria: 101, idEnt: 3, estado: 'a pagar', fechaSolicitud: '2026-06-01', adjuntos: null },
-                { id: 1005, idFeria: 101, idEnt: 4, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-05-20', adjuntos: null },
-                { id: 1010, idFeria: 105, idEnt: 2, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-02-01', adjuntos: null },
-                { id: 1011, idFeria: 104, idEnt: 2, estado: 'rechazada', fechaSolicitud: '2026-05-10', adjuntos: null, motivoRechazo: 'No cumples con el requisito de ser estudiante.' },
-                { id: 1012, idFeria: 101, idEnt: 5, estado: 'pendiente', fechaSolicitud: '2026-06-05', adjuntos: null },
-                { id: 1013, idFeria: 101, idEnt: 6, estado: 'pendiente', fechaSolicitud: '2026-06-06', adjuntos: null },
-                { id: 1014, idFeria: 101, idEnt: 7, estado: 'pendiente', fechaSolicitud: '2026-06-07', adjuntos: null },
+                { id: 1001, idFeria: 101, idEnt: 2, estado: 'pendiente', fechaSolicitud: '2026-06-01', pagoHasta: '2026-06-15', adjuntos: null },
+                { id: 1002, idFeria: 102, idEnt: 2, estado: 'a pagar', fechaSolicitud: '2026-06-02', pagoHasta: '2026-07-20', adjuntos: null },
+                { id: 1003, idFeria: 103, idEnt: 2, estado: 'reservada', fechaSolicitud: '2026-05-15', pagoHasta: '2026-07-10', adjuntos: null },
+                { id: 1009, idFeria: 106, idEnt: 2, estado: 'reservada', fechaSolicitud: '2026-06-01', pagoHasta: '2026-06-10', adjuntos: null },
+                { id: 1004, idFeria: 101, idEnt: 3, estado: 'a pagar', fechaSolicitud: '2026-06-01', pagoHasta: '2026-06-15', adjuntos: null },
+                { id: 1005, idFeria: 101, idEnt: 4, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-05-20', pagoHasta: '2026-06-15', adjuntos: null },
+                { id: 1010, idFeria: 105, idEnt: 2, estado: '¡nos vemos en la feria!', fechaSolicitud: '2026-02-01', pagoHasta: '2026-02-08', adjuntos: null },
+                { id: 1011, idFeria: 104, idEnt: 2, estado: 'rechazada', fechaSolicitud: '2026-05-10', pagoHasta: '2026-08-01', adjuntos: null, motivoRechazo: 'No cumples con el requisito de ser estudiante.' },
+                { id: 1012, idFeria: 101, idEnt: 5, estado: 'pendiente', fechaSolicitud: '2026-06-05', pagoHasta: '2026-06-15', adjuntos: null },
+                { id: 1013, idFeria: 101, idEnt: 6, estado: 'pendiente', fechaSolicitud: '2026-06-06', pagoHasta: '2026-06-15', adjuntos: null },
+                { id: 1014, idFeria: 101, idEnt: 7, estado: 'pendiente', fechaSolicitud: '2026-06-07', pagoHasta: '2026-06-15', adjuntos: null },
             ]
         };
 
@@ -1857,10 +1864,12 @@
             abrirGestionFeria: (id) => {
                 const f = state.ferias.find(x => x.id === id);
                 if(!f) return;
-                
+                const fechaLimite = f.pagoHasta || f.fecha;
+                document.getElementById('gestion-tiempo-pago').textContent = fechaLimite ? `Hasta el ${fechaLimite.split('-').reverse().join('/')}` : 'A definir';
                 document.getElementById('ed-id').value = f.id;
                 document.getElementById('ed-nombre').value = f.nombre;
                 document.getElementById('ed-fecha').value = f.fecha;
+                document.getElementById('ed-pago-hasta').value = f.pagoHasta || f.fecha; 
                 document.getElementById('ed-horario').value = f.horario;
                 document.getElementById('ed-ubicacion').value = f.ubicacion;
                 document.getElementById('ed-desc').value = f.desc;
@@ -2404,19 +2413,14 @@
                 const comisionFeriante = Math.round((f.costo * COMISION_PLATAFORMA_PORCENTAJE) / 100);
 
                 let bloqueFechasPago = '';
-                let desdeFormat = '';
-                let hastaFormat = '';
+                const fechaLimite = r.pagoHasta || f.pagoHasta || f.fecha;
+                const hastaFormat = fechaLimite ? fechaLimite.split('-').reverse().join('/') : 'A definir';
 
-                if (r.pagoDesde && r.pagoHasta) {
-                    desdeFormat = r.pagoDesde.split('-').reverse().join('/');
-                    hastaFormat = r.pagoHasta.split('-').reverse().join('/');
-                }
-
-                if (esReserva && r.pagoDesde && r.pagoHasta && !['¡nos vemos en la feria!', 'cancelada por falta de pago'].includes(r.estado.toLowerCase())) {
+                if (esReserva && fechaLimite && !['¡nos vemos en la feria!', 'cancelada por falta de pago'].includes(r.estado.toLowerCase())) {
                     bloqueFechasPago = `
                         <div style="background-color: var(--arena-calido); padding: 10px; border-radius: var(--radio); margin-top: 10px; font-size: 0.85rem; border: 1px dashed var(--verde-bosque);">
                             <strong><i class="fa-solid fa-clock"></i> Tiempo para pagar el total:</strong><br>
-                            Entre el ${desdeFormat} y el ${hastaFormat}
+                            Hasta el ${hastaFormat}
                         </div>
                     `;
                 }
@@ -2428,14 +2432,8 @@
                     actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, 'reservada')">Pagar Reserva ($${totalAPagarConComision})</button>`;
                 } else if (r.estado.toLowerCase() === 'reservada') {
                     const hoy = new Date().toISOString().split('T')[0];
-                    if (r.pagoDesde && r.pagoHasta) {
-                        if (hoy < r.pagoDesde) {
-                            actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: grey;" title="Habilitado desde el ${desdeFormat}">Pago habilitado el ${desdeFormat}</button>`;
-                        } else if (hoy > r.pagoHasta) {
-                            actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: var(--rojo-tomate);" title="Plazo vencido">Plazo de pago vencido</button>`;
-                        } else {
-                            actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Resto del Stand ($${montoRestanteStand})</button>`;
-                        }
+                    if (fechaLimite && hoy > fechaLimite) {
+                        actionButtons += `<button class="btn-primario" disabled style="width: 100%; margin-bottom: 10px; background-color: var(--rojo-tomate);" title="Plazo vencido">Plazo de pago vencido</button>`;
                     } else {
                         actionButtons += `<button class="btn-primario" style="width: 100%; margin-bottom: 10px; background-color: var(--verde-bosque);" onclick="app.simularPago(${r.id}, '¡nos vemos en la feria!')">Pagar Resto del Stand ($${montoRestanteStand})</button>`;
                     }
@@ -2599,21 +2597,29 @@
                     requisitosVisualHtml = `<p>${f.requisitos || '-'}</p>`;
                 }
 
-                const desgloseEconomico = `
-                    <div style="background-color: #eef7f4; border: 1px solid var(--verde-menta); padding: 15px; border-radius: var(--radio); margin-bottom: 20px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span style="color: var(--carbon); font-weight: bold;">Valor Total del Stand:</span>
-                            <span style="color: var(--verde-bosque); font-weight: bold; font-size: 1.1rem;">$${f.costo}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #555;">
-                            <span>Valor de la Reserva acordada (${pctReserva}%):</span>
-                            <span style="color: var(--rojo-tomate); font-weight: bold;">$${valorReserva}</span>
-                        </div>
-                        <div style="font-size: 0.85rem; color: #444; text-align: center; margin-top: 10px; border-top: 1px dashed var(--verde-menta); padding-top: 8px;">
-                            Cargo por servicio: ${COMISION_PLATAFORMA_PORCENTAJE}%, $${comisionFeriante}
-                        </div>
-                    </div>
-                `;
+                // --- NUEVO: Cálculo de fecha límite ---
+        const fechaLimite = f.pagoHasta || f.fecha; // Fallback inteligente por si el mock no lo tiene
+        const pagoHastaFormat = fechaLimite ? fechaLimite.split('-').reverse().join('/') : 'A definir';
+
+        const desgloseEconomico = `
+            <div style="background-color: #eef7f4; border: 1px solid var(--verde-menta); padding: 15px; border-radius: var(--radio); margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span style="color: var(--carbon); font-weight: bold;">Valor Total del Stand:</span>
+                    <span style="color: var(--verde-bosque); font-weight: bold; font-size: 1.1rem;">$${f.costo}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #555;">
+                    <span>Valor de la Reserva acordada (${pctReserva}%):</span>
+                    <span style="color: var(--rojo-tomate); font-weight: bold;">$${valorReserva}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: var(--verde-bosque); margin-top: 5px; font-weight: bold;">
+                    <span><i class="fa-solid fa-clock"></i> Tiempo para pagar el total:</span>
+                    <span>Hasta el ${pagoHastaFormat}</span>
+                </div>
+                <div style="font-size: 0.85rem; color: #444; text-align: center; margin-top: 10px; border-top: 1px dashed var(--verde-menta); padding-top: 8px;">
+                    Cargo por servicio: ${COMISION_PLATAFORMA_PORCENTAJE}%, $${comisionFeriante}
+                </div>
+            </div>
+        `;
 
                 const html = `
                     <img src="${imgSrc}" style="width: calc(100% + 60px); margin: -30px -30px 20px -30px; height: 200px; object-fit: cover; border-top-left-radius: var(--radio); border-top-right-radius: var(--radio);" alt="Imagen de Feria">
