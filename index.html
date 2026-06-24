@@ -1547,21 +1547,31 @@
                             </div>
                         </div>`;
                 } else if(u.isOrgSetup && u.orgData) {
-                    let igHtml = u.orgData.ig ? `<a href="${u.orgData.ig}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.orgData.ig}</a>` : 'No especificado';
-                    let fbHtml = u.orgData.fb ? `<a href="${u.orgData.fb}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.orgData.fb}</a>` : 'No especificado';
+    let igHtml = u.orgData.ig ? `<a href="${u.orgData.ig}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.orgData.ig}</a>` : 'No especificado';
+    let fbHtml = u.orgData.fb ? `<a href="${u.orgData.fb}" target="_blank" style="color: var(--verde-bosque); text-decoration: underline;">${u.orgData.fb}</a>` : 'No especificado';
 
-                    html = `
-                        <div class="text-center" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-                            <img src="${u.orgData.avatar || 'https://via.placeholder.com/120?text=Logo'}" class="perfil-img-preview">
-                            <h3 style="margin-bottom: 0;">${u.orgData.name || u.name}</h3>
-                            <p class="badge" style="background: var(--verde-bosque); color: white;">Organizador</p>
-                            <div style="background: var(--arena-calido); width: 100%; padding: 15px; border-radius: var(--radio); text-align: left; margin-top: 10px;">
-                                <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-user" style="color: var(--verde-bosque);"></i> Responsable:</strong> ${u.name}</p>
-                                <p style="margin-bottom: 8px; word-break: break-all;"><strong><i class="fa-brands fa-instagram" style="color: var(--verde-bosque);"></i> Instagram:</strong> <br>${igHtml}</p>
-                                <p style="word-break: break-all;"><strong><i class="fa-brands fa-facebook" style="color: var(--verde-bosque);"></i> Facebook:</strong> <br>${fbHtml}</p>
-                            </div>
-                        </div>`;
-                } else { html = `<p class="text-center">El usuario todavía no configuró su perfil.</p>`; }
+    // 1. Evaluamos explícitamente el estado de verificación
+    let badgeVerificacion = u.orgData.verificado 
+        ? `<span class="badge aceptada" style="font-size:0.85rem;"><i class="fa-solid fa-shield-halved"></i> Verificado por FERIARG</span>`
+        : `<span class="badge badge-estado-rechazada" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation"></i> No verificado por FERIARG</span>`;
+
+    html = `
+        <div class="text-center" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            <img src="${u.orgData.avatar || 'https://via.placeholder.com/120?text=Logo'}" class="perfil-img-preview">
+            <h3 style="margin-bottom: 0;">${u.orgData.name || u.name}</h3>
+            
+            <div style="display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                <p class="badge" style="background: var(--verde-bosque); color: white; margin-bottom: 0;">Organizador</p>
+                ${badgeVerificacion}
+            </div>
+
+            <div style="background: var(--arena-calido); width: 100%; padding: 15px; border-radius: var(--radio); text-align: left; margin-top: 10px;">
+                <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-user" style="color: var(--verde-bosque);"></i> Responsable:</strong> ${u.name}</p>
+                <p style="margin-bottom: 8px; word-break: break-all;"><strong><i class="fa-brands fa-instagram" style="color: var(--verde-bosque);"></i> Instagram:</strong> <br>${igHtml}</p>
+                <p style="word-break: break-all;"><strong><i class="fa-brands fa-facebook" style="color: var(--verde-bosque);"></i> Facebook:</strong> <br>${fbHtml}</p>
+            </div>
+        </div>`;
+            } else { html = `<p class="text-center">El usuario todavía no configuró su perfil.</p>`; }
 
                 document.getElementById('perfil-usuario-content').innerHTML = html;
                 document.getElementById('modal-perfil-usuario').classList.remove('oculto');
@@ -2497,7 +2507,7 @@
 
                 paginadas.forEach(f => {
                     const org = state.usuarios.find(u => u.id === f.idOrg) || { orgData: { name: 'Org. Independiente' } };
-                    const tildeVerificado = (org.orgData && org.orgData.verificado) ? `<i class="fa-solid fa-circle-check" style="color: #1d9bf0; margin-left: 4px;" title="Esta organización fue verificada por Feriarg"></i>` : '';
+                    const tildeVerificado = (org.orgData && org.orgData.verificado) ? `<i class="fa-solid fa-circle-check" style="color: #1d9bf0; margin-left: 4px;" title="Esta organización fue verificada por Feriarg"></i>` : `<span style="color: var(--rojo-tomate); font-size: 0.8rem; font-weight: bold; margin-left: 6px;" title="Organizador sin verificar">(No verificado)</span>`;
                     const badgeCupo = f.cuposDisponibles > 0 ? `<span class="badge cupos">${f.cuposDisponibles} libres</span>` : `<span class="badge agotado">Agotado</span>`;
                     const imgSrc = f.imagen || `https://via.placeholder.com/400x200/A7D7C5/1E5631?text=${encodeURIComponent(f.nombre)}`;
                     
